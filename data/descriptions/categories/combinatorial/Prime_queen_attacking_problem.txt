@@ -1,0 +1,11 @@
+Prime queen attacking problem
+
+This problem, posed first by G.L. Honaker, is to put a queen and the n^2
+numbers 1,...,n^2, on a n x n chessboard so that: (a) no two numbers are on the
+same cell, (b) any number i+1 is reachable by a knight move from the cell
+containing i, (c) the number of "free" primes (i.e., primes not attacked by the
+queen) is minimal.  Note that 1 is not prime, and that the queen does not
+attack its own cell.
+
+
+

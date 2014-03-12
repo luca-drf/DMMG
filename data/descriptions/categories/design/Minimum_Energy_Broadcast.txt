@@ -1,0 +1,135 @@
+Minimum Energy Broadcast (MEB)
+
+This benchmark specification originates from the Centre for Telecommunications
+Value-chain Research and Cork Constraint Computation Centre, Dept. of Computer
+Science, University College Cork, Ireland. This work is supported by Science
+Foundation Ireland under Grant No. 03/CE3/I405.  An ad hoc network is a
+collection of wireless devices that form a network without any centralised
+infrastructure. When the devices are deployed they must first configure
+themselves to form a correctly functioning network. One configuration task when
+operating in a battery limited environment is the Minimum Energy Broadcast
+(MEB) problem. Assume a network of devices with omnidirectional antennas. The
+aim is to configure the power level in each device such that if a specified
+source device broadcasts a message it will reach every other device either
+directly or by being retransmitted by an intermediate device (a broadcast tree
+is formed). The desired configuration is that which minimises the total energy
+required by all devices, thus increasing the lifetime of the network.
+
+Several approaches (both centralised and distributed) have been proposed for
+solving this problem. See the references page of this benchmark for more
+information. As there is no central controller and in a large network
+centralising the entire problem may be infeasible, Distributed Constraint
+Optimisation (DisCOP) is one appropriate way to model and solve the problem,
+and it is this approach that will be described in this specification.
+
+DisCOP Formulation
+
+To formulate the problem as a DisCOP, we have an agent, ai, representing each
+device in the network. The neighbours of ai include all agents that ai can
+communicate with when broadcasting at its maximum power level.
+
+Relationship variables: For each neighbour aj, ai has a public variable, taking
+one of 3 values, indicating the relationship between the two devices in the
+current solution (broadcast tree):
+
+0 = the devices are not connected in the broadcast tree 1 = ai is the parent of
+aj in the broadcast tree 2 = ai is the child of aj in the broadcast tree An
+inter-agent constraint between each pair of neighbours ensures that the
+corresponding variables in neighbouring nodes match up correctly, i.e. both are
+0, or else one is 1 and the other is 2. To construct a tree, each agent is
+constrained to have exactly one parent, except the source device, which is not
+allowed any parents.  Power/energy variables:The agents also have a private
+variable corresponding to each of these public variables set to be the energy
+cost incurred due to the setting of that public variable, i.e. if the public
+variable is 1 then the private variable is assigned the energy cost for
+broadcasting to that neighbour, otherwise it is assigned 0. A private
+constraint over all of these `energy cost' variables states the total cost for
+ai to broadcast to all of its children is the maximum of these costs.
+
+Hop-count variable:Each agent also has a hop-count variable, indicating how
+many hops that device is from the source device. A second inter-agent
+constraint between neighbouring agents ensures that the hop-count of a child in
+the broadcast tree is one greater than its parent, thus preventing cycles.
+
+Example
+
+Figure 1 displays an example MEB problem with 10 devices. This problem is
+modelled using the variables as specified in Table 1 and constraints as
+described in the previous paragraph. Its corresponding minimal energy broadcast
+tree is shown in Figure 2, and the optimal assignments to variables is shown in
+Table 2.
+
+ 
+
+Table 1. Complete list of variables and domains of all agents in the problem.
+Variable names begin with the agent name. Subscript 'h' indicates hop count
+variable; 'r' indicates relationship variable; 'p' indicates broadcast
+power/energy cost variable. For relationship variables, -x indicates that
+variable is for the relationship with agent x. Similarly for energy cost
+variables, the -x indicates that this is the power required to reach agent x.
+Variable	 a1h	 a1r-3	 a1p-3	 a1r-4	 a1p-4	 a1r-7	 a1p-7	 a1r-8	 a1p-8
+Domain	 0-9	 0,1,2	 0,93	 0,1,2	 0,21	 0,1,2	 0,48	 0,1,2	 0,17
+Variable	 a2h	 a2r-3	 a2p-3	 a2r-6	 a2p-6	 a2r-8	 a2p-8	 a2r-9	 a2p-9	 a2r-10	 a2p-10
+Domain	 0-9	 0,1,2	 0,33	 0,1,2	 0,97	 0,1,2	 0,107	 0,1,2	 0,93	 0,1,2	 0,93
+Variable	 a3h	 a3r-1	 a3p-1	 a3r-2	 a3p-2	 a3r-4	 a3p-4	 a3r-5	 a3p-5	 a3r-8	 a3p-8	 a3r-9	 a3p-9
+Domain	 0-9	 0,1,2	 0,93	 0,1,2	 0,33	 0,1,2	 0,79	 0,1,2	 0,162	 0,1,2	 0,7	 0,1,2	 0,124
+Variable	 a4h	 a4r-1	 a4p-1	 a4r-3	 a4p-3	 a4r-8	 a4p-8
+Domain	 0-9	 0,1,2	 0,21	 0,1,2	 0,79	 0,1,2	 0,5
+Variable	 a5h	 a5r-3	 a5p-3	 a5r-9	 a5p-9
+Domain	 0-9	 0,1,2	 0,162	 0,1,2	 0,107
+Variable	 a6h	 a6r-2	 a6p-2	 a6r-10	 a6p-10
+Domain	 0-9	 0,1,2	 0,97	 0,1,2	 0,3
+Variable	 a7h	 a7r-1	 a7p-1
+Domain	 0-9	 0,1,2	 0,48
+Variable	 a8h	 a8r-1	 a8p-1	 a8r-2	 a8p-2	 a8r-3	 a8p-3	 a8r-4	 a8p-4
+Domain	 0-9	 0,1,2	 0,17	 0,1,2	 0,107	 0,1,2	 0,7	 0,1,2	 0,5
+Variable	 a9h	 a9r-2	 a9p-2	 a9r-3	 a9p-3	 a9r-5	 a9p-5
+Domain	 0-9	 0,1,2	 0,93	 0,1,2	 0,124	 0,1,2	 0,107
+Variable	 a10h	 a10r-2	 a10p-2	 a10r-6	 a10p-6
+Domain	 0-9	 0,1,2	 0,93	 0,1,2	 0,3
+Table 2. Optimal assignment of values to variables in example problem. Cells in
+green indicate when an agent will broadcast to another agent. Cells in yellow
+are the broadcast power required by that agent to broadcast to all its children
+in the broadcast tree. The optimal solution is the sum of all these values,
+i.e. 275.
+Variable	 a1h	 a1r-3	 a1p-3	 a1r-4	 a1p-4	 a1r-7	 a1p-7	 a1r-8	 a1p-8
+Value	 3	 0	 0	 0	 0	 1	 48	 2	 0
+Variable	 a2h	 a2r-3	 a2p-3	 a2r-6	 a2p-6	 a2r-8	 a2p-8	 a2r-9	 a2p-9	 a2r-10	 a2p-10
+Value	 0	 1	 33	 0	 0	 0	 0	 1	 93	 1	 93
+Variable	 a3h	 a3r-1	 a3p-1	 a3r-2	 a3p-2	 a3r-4	 a3p-4	 a3r-5	 a3p-5	 a3r-8	 a3p-8	 a3r-9	 a3p-9
+Value	 1	 0	 0	 2	 0	 0	 0	 0	 0	 1	 7	 0	 0
+Variable	 a4h	 a4r-1	 a4p-1	 a4r-3	 a4p-3	 a4r-8	 a4p-8
+Value	 3	 0	 0	 0	 0	 2	 0
+Variable	 a5h	 a5r-3	 a5p-3	 a5r-9	 a5p-9
+Value	 2	 0	 0	 2	 0
+Variable	 a6h	 a6r-2	 a6p-2	 a6r-10	 a6p-10
+Value	 2	 0	 0	 2	 0
+Variable	 a7h	 a7r-1	 a7p-1
+Value	 4	 2	 0
+Variable	 a8h	 a8r-1	 a8p-1	 a8r-2	 a8p-2	 a8r-3	 a8p-3	 a8r-4	 a8p-4
+Value	 2	 1	 17	 0	 0	 2	 0	 1	 5
+Variable	 a9h	 a9r-2	 a9p-2	 a9r-3	 a9p-3	 a9r-5	 a9p-5
+Value	 1	 2	 0	 0	 0	 1	 107
+Variable	 a10h	 a10r-2	 a10p-2	 a10r-6	 a10p-6
+Value	 1	 2	 0	 1	 3
+Problem Parameters
+
+Specific problem instances are included in this benchmark and are linked to on
+the main benchmark page.  Problems can also be generated using the following
+parameters:
+
+An area with length x and width y in which to place the devices.  A number n of
+devices.  A maximum power p at which each device can broadcast at.  A path loss
+exponent exp, which is the rate at which the radio signal attenuates.  Each
+device is placed randomly in the area. To determine the power required for two
+devices a1 and a2 to communicate with each other, first calculate the distance,
+d between the devices: d = √((x2-x1)2 + (y2-y1)2). The energy used (w=watts) to
+broadcast this distance is: w = (dexp) x 0.0001. If w < p, then the devices can
+communicate.  Notes
+
+This problem is related to the Travelling Salesman Problem (TSP) and Minimum
+Spanning Tree (MST) problem. The key difference with the TSP is that in MEB the
+salesman/broadcast can travel more than one route out of a city/node. The
+difference with the Minimum Spanning Tree problem comes from the fact that the
+cost of broadcasting to multiple child nodes is the maximum cost over all the
+links to children as opposed to the sum of the links.
