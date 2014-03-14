@@ -7,7 +7,7 @@ def read(fname):
 
 
 setup(
-    name = "-DMMG-",
+    name = "DMMG",
     version = "0",
     author = "Luca Da Rin Fioretto, Federico Campeotto",
     author_email = "Luca Da Rin Fioretto <lucadrf@nmsu.edu>,\
