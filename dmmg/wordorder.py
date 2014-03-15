@@ -33,29 +33,24 @@ def create_ordervec(corpus, joint_word_set):
     threshold = 0.2
     #First we create a list of size |corpus| filled with 0s
     word_order_vector = [0] * len(joint_word_set)
-    idx = -1
-    for element in joint_word_set:
-        idx += 1
-        i = 0
-        for word in corpus:
+
+    for idx, element in enumerate(joint_word_set):
+        for i, word in enumerate(corpus):
           # The word is present in the sentence:
           # fill the order vector with the corresponding index
             if word == element:
                 word_order_vector[idx] = i + 1
                 break
-            i += 1
         # The word is not present in the sentece:
         # find the most similar word and che how much similar it is
         if word_order_vector[idx] == 0:
             # Find the most semantically similar word
             best_sim_val = 0
-            j = 0
-            for word in corpus:
+            for j, word in enumerate(corpus):
                 sim_val = word.similarity(element)
                 if sim_val > best_sim_val:
                     best_sim_val = sim_val
                     best_index = j + 1
-                j += 1
                 # Check if we found a (the best) similar word
             if best_sim_val >= threshold:
                 print element, best_sim_val, threshold

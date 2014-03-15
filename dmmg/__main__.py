@@ -1,4 +1,5 @@
 import wordorder as wo
+from semantic import SemanticVec
 from word import Word
 from sys import argv
 import nltk
@@ -48,6 +49,11 @@ def main():
 
     # Calculate the Word Order Similarity of the two vectors
     wos_measure = wo.order_similarity(order_vector_1, order_vector_2)
+
+    # Calculate the two semantic vectors
+    sv = SemanticVec()
+    semantic_vector_1 = sv.generate(corpus_s1, joint_word_set)
+    semantic_vector_2 = sv.generate(corpus_s2, joint_word_set)
 
     print wos_measure
 
