@@ -13,6 +13,11 @@ Requirements
 - Python 2.7
 - nltk package http://nltk.org/
 
+Usage
+----------------------------
+::
+
+    % python dmmg <delta> <file1> <file2>
 
 Contributors
 ------------
