@@ -1,5 +1,6 @@
 from nltk import FreqDist
 from nltk.corpus import brown
+from numpy import dot, linalg
 
 
 class SemanticVec:
@@ -28,3 +29,7 @@ class SemanticVec:
                                  element.information(self.fdist) *
                                  word.information(self.fdist))
         return vector
+
+    def sem_similarity(self, vector1, vector2):
+        return (dot(vector1, vector2) /
+                (linalg.norm(vector1) * linalg.norm(vector2)))

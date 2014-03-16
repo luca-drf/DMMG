@@ -2,10 +2,8 @@ import wordorder as wo
 from semantic import SemanticVec
 from word import Word
 from sys import argv
-import nltk
+from nltk import pos_tag, word_tokenize
 from nltk.tag.mapping import map_tag
-# import re
-# from nltk.corpus import PlaintextCorpusReader
 
 
 def import_file(filepath):
@@ -13,8 +11,8 @@ def import_file(filepath):
     tokens = []
     with open(filepath, 'r') as f:
         for line in f:
-            tokens.extend(nltk.word_tokenize(line))
-    return nltk.pos_tag(tokens)
+            tokens.extend(word_tokenize(line))
+    return pos_tag(tokens)
 
 
 def create_corpus(tagged):
@@ -22,23 +20,31 @@ def create_corpus(tagged):
             for pair in tagged]
 
 
+def print_stats(order_vector_1, order_vector_2, wos_measure,
+                semantic_vector_1, semantic_vector_2, sem_measure,
+                overall_similarity):
+
+    print '== Order Vectors =='
+    print order_vector_1
+    print order_vector_2
+    print 'W.O. Similarity:', wos_measure
+    print ''
+    print '== Semantic Vectors =='
+    print semantic_vector_1
+    print semantic_vector_2
+    print ''
+    print 'Semantic Similarity:', sem_measure
+    print '---------------------------------'
+    print 'Overall Similarity:', overall_similarity
+
+
 def main():
-    tagged1 = import_file(argv[1])
-    tagged2 = import_file(argv[2])
+    delta = float(argv[1])
+    tagged1 = import_file(argv[2])
+    tagged2 = import_file(argv[3])
 
     corpus_s1 = create_corpus(tagged1)
     corpus_s2 = create_corpus(tagged2)
-
-    # Split the paths and the files' names
-    # splitter = re.compile(r'(.*?)([a-zA-Z0-9._-]+$)')
-    # match_s1 = splitter.findall(path_sentence_1)
-    # match_s2 = splitter.findall(path_sentence_2)
-
-    # # Create two corpus: one for each sentence/text
-    # corpus_root_s1, filename_s1 = match_s1[0][0], match_s1[0][1]
-    # corpus_root_s2, filename_s2 = match_s2[0][0], match_s2[0][1]
-    # corpus_s1 = PlaintextCorpusReader(corpus_root_s1, filename_s1)
-    # corpus_s2 = PlaintextCorpusReader(corpus_root_s2, filename_s2)
 
     # Create the joint word text
     joint_word_set = wo.create_jointset(corpus_s1, corpus_s2)
@@ -55,7 +61,13 @@ def main():
     semantic_vector_1 = sv.generate(corpus_s1, joint_word_set)
     semantic_vector_2 = sv.generate(corpus_s2, joint_word_set)
 
-    print wos_measure
+    sem_measure = sv.sem_similarity(semantic_vector_1, semantic_vector_2)
+
+    overall_similarity = delta * sem_measure + (1 - delta) * wos_measure
+
+    print_stats(order_vector_1, order_vector_2, wos_measure,
+                semantic_vector_1, semantic_vector_2, sem_measure,
+                overall_similarity)
 
 
 if __name__ == "__main__":
