@@ -1,4 +1,3 @@
-import re
 from sets import Set
 from math import sqrt
 
@@ -18,11 +17,9 @@ def create_jointset(corpus_a, corpus_b):
     joint_word_set = Set()
     # Create the re to avoid punctuation
     for word in corpus_a:
-        if re.match(r'\w+', word.string):
-            joint_word_set.add(word)
+        joint_word_set.add(word)
     for word in corpus_b:
-        if re.match(r'\w+', word.string):
-            joint_word_set.add(word)
+        joint_word_set.add(word)
     return joint_word_set
 
 

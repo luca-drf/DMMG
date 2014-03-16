@@ -4,10 +4,11 @@ from word import Word
 from sys import argv
 from nltk import pos_tag, word_tokenize
 from nltk.tag.mapping import map_tag
+from re import match
 
 
 def import_file(filepath):
-    """ Return a list of tagged words """
+    """ Take a filepath and return a list of tagged words """
     tokens = []
     with open(filepath, 'r') as f:
         for line in f:
@@ -16,8 +17,14 @@ def import_file(filepath):
 
 
 def create_corpus(tagged):
-    return [Word(pair[0], map_tag('en-ptb', 'universal', pair[1]))
-            for pair in tagged]
+    """ Take a list of tagged words and return a corpus as a list of tagged
+    words with universal tagging and filtering all non-word entries """
+    corpus = []
+    for pair in tagged:
+        if match(r'[a-zA-Z0-9_-]+', pair[0]):
+            corpus.append(Word(pair[0],
+                          map_tag('en-ptb', 'universal', pair[1])))
+    return corpus
 
 
 def print_stats(order_vector_1, order_vector_2, wos_measure,
@@ -27,6 +34,7 @@ def print_stats(order_vector_1, order_vector_2, wos_measure,
     print '== Order Vectors =='
     print order_vector_1
     print order_vector_2
+    print ''
     print 'W.O. Similarity:', wos_measure
     print ''
     print '== Semantic Vectors =='
@@ -45,9 +53,14 @@ def main():
 
     corpus_s1 = create_corpus(tagged1)
     corpus_s2 = create_corpus(tagged2)
+    print '== Corpus 1 & 2 =='
+    print corpus_s1
+    print corpus_s2
 
     # Create the joint word text
     joint_word_set = wo.create_jointset(corpus_s1, corpus_s2)
+    print '== Joint Word Set =='
+    print joint_word_set
 
     # Create the two order vectors
     order_vector_1 = wo.create_ordervec(corpus_s1, joint_word_set)
