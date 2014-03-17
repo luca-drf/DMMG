@@ -22,8 +22,11 @@ def create_corpus(tagged):
     corpus = []
     for pair in tagged:
         if match(r'[a-zA-Z0-9_-]+', pair[0]):
-            corpus.append(Word(pair[0],
-                          map_tag('en-ptb', 'universal', pair[1])))
+            try:
+                corpus.append(Word(pair[0],
+                              map_tag('en-ptb', 'universal', pair[1])))
+            except KeyError:
+                print 'Part mismatch:', pair[0], pair[1]
     return corpus
 
 
