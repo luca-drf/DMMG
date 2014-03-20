@@ -1,6 +1,6 @@
 import os
 import sys
-import multiprocessing
+import multiprocessing as mp
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 import Queue
@@ -8,35 +8,35 @@ import time
 
 
 IP = '127.0.0.1'
-PORTNUM = 55444
-AUTHKEY = 'shufflin'
-DATA_ROOT = '/Users/radome/src/Prove/Python_Multiprocess/data'
+PORT = 55443
+AUTH = '2dccd769eca5696d7daf745b4ffb55afe08c41bc'
+DATA_ROOT = ''
 
 
-def make_server_manager(port, authkey):
+def make_server_manager(port, AUTH):
     job_q = Queue.Queue()
     result_q = Queue.Queue()
 
-    class JobQueueManager(SyncManager):
+    class JobQManager(SyncManager):
         pass
 
-    JobQueueManager.register('get_job_q', callable=lambda: job_q)
-    JobQueueManager.register('get_result_q', callable=lambda: result_q)
+    JobQManager.register('get_job_q', callable=lambda: job_q)
+    JobQManager.register('get_result_q', callable=lambda: result_q)
 
-    manager = JobQueueManager(address=('', port), authkey=authkey)
+    manager = JobQManager(address=('', port), authkey=AUTH)
     manager.start()
     print 'Server started at port %s' % port
     return manager
 
 
-def make_client_manager(ip, port, authkey):
-    class ServerQueueManager(SyncManager):
+def make_client_manager(ip, port, AUTH):
+    class ServerQManager(SyncManager):
         pass
 
-    ServerQueueManager.register('get_job_q')
-    ServerQueueManager.register('get_result_q')
+    ServerQManager.register('get_job_q')
+    ServerQManager.register('get_result_q')
 
-    manager = ServerQueueManager(address=(ip, port), authkey=authkey)
+    manager = ServerQManager(address=(ip, port), authkey=AUTH)
     manager.connect()
 
     print 'Client connected to %s:%s' % (ip, port)
@@ -44,7 +44,7 @@ def make_client_manager(ip, port, authkey):
 
 
 def multi_hash(value):
-    print 'hash', multiprocessing.current_process().name
+    print 'hash', mp.current_process().name
     return hash(value)
 
 
@@ -55,7 +55,7 @@ def dmmg(job):
 
 
 def dmmg_worker(job_q, result_q):
-    myname = multiprocessing.current_process().name
+    myname = mp.current_process().name
     while True:
         try:
             job = job_q.get_nowait()
@@ -67,11 +67,10 @@ def dmmg_worker(job_q, result_q):
             return
 
 
-def mp_dmmg(shared_job_q, shared_result_q, nprocs):
+def mp_dmmg(s_job_q, s_result_q, nprocs):
     procs = []
-    for i in range(nprocs):
-        p = multiprocessing.Process(target=dmmg_worker,
-                                    args=(shared_job_q, shared_result_q))
+    for i in xrange(nprocs):
+        p = mp.Process(target=dmmg_worker, args=(s_job_q, s_result_q))
         procs.append(p)
         p.start()
 
@@ -80,18 +79,18 @@ def mp_dmmg(shared_job_q, shared_result_q, nprocs):
 
 
 def server(query):
-    manager = make_server_manager(PORTNUM, AUTHKEY)
-    shared_job_q = manager.get_job_q()
-    shared_result_q = manager.get_result_q()
+    manager = make_server_manager(PORT, AUTH)
+    s_job_q = manager.get_job_q()
+    s_result_q = manager.get_result_q()
     job_n = 0
 
     for dirpath, dirnames, filenames in os.walk(DATA_ROOT):
         for filename in filenames:
-            shared_job_q.put((query, os.path.join(dirpath, filename)))
+            s_job_q.put((query, os.path.join(dirpath, filename)))
             job_n += 1
 
     while True:
-        filepath, sim = shared_result_q.get()
+        filepath, sim = s_result_q.get()
         job_n -= 1
         if sim != (hash(filepath) + hash(query)):
             print 'HASH MISMATCH:', filepath, sim
@@ -106,11 +105,11 @@ def server(query):
 
 
 def client():
-    manager = make_client_manager(IP, PORTNUM, AUTHKEY)
+    manager = make_client_manager(IP, PORT, AUTH)
     job_q = manager.get_job_q()
     result_q = manager.get_result_q()
 
-    nprocs = multiprocessing.cpu_count() / 2
+    nprocs = mp.cpu_count() / 2
     mp_dmmg(job_q, result_q, nprocs)
 
 
