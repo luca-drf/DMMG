@@ -1,11 +1,14 @@
 import wordorder as wo
-from semantic import SemanticVec
+import semantic as sv
+# from nltk.corpus import brown
+from nltk import pos_tag, word_tokenize, FreqDist
 from word import Word
 from sys import argv
-from nltk import pos_tag, word_tokenize
 from nltk.tag.mapping import map_tag
 from re import match
+from multiprocessing import Pool
 from time import time
+import json
 
 
 def import_file(filepath):
@@ -33,7 +36,7 @@ def create_corpus(tagged):
 
 def print_stats(order_vector_1, order_vector_2, wos_measure,
                 semantic_vector_1, semantic_vector_2, sem_measure,
-                overall_similarity, timer):
+                overall_similarity, time):
 
     # print '== Order Vectors =='
     # print order_vector_1
@@ -44,50 +47,53 @@ def print_stats(order_vector_1, order_vector_2, wos_measure,
     # print '== Semantic Vectors =='
     # print semantic_vector_1
     # print semantic_vector_2
-    print ''
+    # print ''
     print 'Semantic Similarity:', sem_measure
     print '---------------------------------'
     print 'Overall Similarity:', overall_similarity,
-    print 'Computed in %s sec.' % (timer[1] - timer[0])
+    print 'Computed in %s sec.' % (time[1] - time[0])
 
 
-def main():
+def dmmg(delta, file1, file2):
     tw_start = time()
-    delta = float(argv[1])
+    p = Pool(2)
+
     print 'Importing files...'
-    tagged1 = import_file(argv[2])
-    tagged2 = import_file(argv[3])
+    tagged = p.map_async(import_file, (file1, file2)).get()
 
-    print 'Create corpus...'
-    corpus_s1 = create_corpus(tagged1)
-    corpus_s2 = create_corpus(tagged2)
+    print 'Creating corpus...'
+    corpus = p.map_async(create_corpus, tagged).get()
 
-    # Create the joint word text
-    print 'Create joint wordset...'
-    joint_word_set = wo.create_jointset(corpus_s1, corpus_s2)
+    print 'Creating joint wordset...'
+    joint_word_set = wo.create_jointset(corpus[0], corpus[1])
 
-    # Create the two order vectors
-    print 'Create order vectors...'
-    order_vector_1 = wo.create_ordervec(corpus_s1, joint_word_set)
-    order_vector_2 = wo.create_ordervec(corpus_s2, joint_word_set)
+    print 'Creating order vectors...'
+    order_vectors = [p.apply_async(wo.create_ordervec, (c, joint_word_set))
+                     for c in corpus]
 
     # Calculate the Word Order Similarity of the two vectors
-    wos_measure = wo.order_similarity(order_vector_1, order_vector_2)
+    wos_measure = wo.order_similarity(order_vectors[0].get(),
+                                      order_vectors[1].get())
 
-    # Calculate the two semantic vectors
-    print 'Create semantic vectors...'
-    sv = SemanticVec()
-    semantic_vector_1 = sv.generate(corpus_s1, joint_word_set)
-    semantic_vector_2 = sv.generate(corpus_s2, joint_word_set)
+    print 'Creating semantic vectors...'
+    # fdist = FreqDist(brown.words())
+    with open('dmmg/fdist.json', 'r') as f:
+        freqs = json.load(f)
+    fdist = FreqDist(freqs)
 
-    sem_measure = sv.sem_similarity(semantic_vector_1, semantic_vector_2)
+    semantic_vectors = [p.apply_async(sv.generate, (c, joint_word_set, fdist))
+                        for c in corpus]
+
+    sem_measure = sv.sem_similarity(semantic_vectors[0].get(),
+                                    semantic_vectors[1].get())
 
     overall_similarity = delta * sem_measure + (1 - delta) * wos_measure
-    tw_stop = time()
-    print_stats(order_vector_1, order_vector_2, wos_measure,
-                semantic_vector_1, semantic_vector_2, sem_measure,
-                overall_similarity, (tw_start, tw_stop))
 
+    tw_stop = time()
+    print_stats(order_vectors[0].get(), order_vectors[1].get(), wos_measure,
+                semantic_vectors[0].get(), semantic_vectors[1].get(),
+                sem_measure, overall_similarity, (tw_start, tw_stop))
 
 if __name__ == "__main__":
-    main()
+    delta, file1, file2 = float(argv[1]), argv[2], argv[3]
+    dmmg(delta, file1, file2)
