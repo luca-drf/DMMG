@@ -1,13 +1,14 @@
 import wordorder as wo
 import semantic as sv
-from nltk.corpus import brown
-from nltk import FreqDist, pos_tag, word_tokenize
+# from nltk.corpus import brown
+from nltk import pos_tag, word_tokenize, FreqDist
 from word import Word
 from sys import argv
 from nltk.tag.mapping import map_tag
 from re import match
 from multiprocessing import Pool
 from time import time
+import json
 
 
 def import_file(filepath):
@@ -75,7 +76,11 @@ def dmmg(delta, file1, file2):
                                       order_vectors[1].get())
 
     print 'Creating semantic vectors...'
-    fdist = FreqDist(brown.words())
+    # fdist = FreqDist(brown.words())
+    with open('dmmg/fdist.json', 'r') as f:
+        freqs = json.load(f)
+    fdist = FreqDist(freqs)
+
     semantic_vectors = [p.apply_async(sv.generate, (c, joint_word_set, fdist))
                         for c in corpus]
 
