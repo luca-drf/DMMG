@@ -1,16 +1,14 @@
 import os
-import sys
 import multiprocessing as mp
-from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 import Queue
 import time
+from maindmmg import dmmg, filepath_gen
 
 
 IP = '127.0.0.1'
 PORT = 55443
 AUTH = '2dccd769eca5696d7daf745b4ffb55afe08c41bc'
-DATA_ROOT = ''
 
 
 def server_manager(port, AUTH):
@@ -43,31 +41,20 @@ def client_manager(ip, port, AUTH):
     return manager
 
 
-def multi_hash(value):
-    print 'hash', mp.current_process().name
-    return hash(value)
-
-
-def dmmg(job):
-    p = Pool(2)
-    result = p.map_async(multi_hash, job)
-    return result.get()[0] + result.get()[1]
-
-
 def dmmg_worker(job_q, result_q):
     myname = mp.current_process().name
     while True:
         try:
             job = job_q.get_nowait()
             print 'dmmg %s got %s file...' % (myname, job)
-            sim = dmmg(job)
-            result_q.put((job[1], sim))
+            sim = dmmg(job[0], job[1], job[2])
+            result_q.put((job[2], sim))
             print '  %s done' % myname
         except Queue.Empty:
             return
 
 
-def mp_dmmg(s_job_q, s_result_q, nprocs):
+def worker_manager(s_job_q, s_result_q, nprocs):
     procs = []
     for i in xrange(nprocs):
         p = mp.Process(target=dmmg_worker, args=(s_job_q, s_result_q))
@@ -78,24 +65,24 @@ def mp_dmmg(s_job_q, s_result_q, nprocs):
         p.join()
 
 
-def server(query):
+def server(args):
+    # args --> (delta, query, root)
     manager = server_manager(PORT, AUTH)
     s_job_q = manager.get_job_q()
     s_result_q = manager.get_result_q()
+
     job_n = 0
+    for filepath in filepath_gen(args[2]):
+        s_job_q.put((args[0], args[1], filepath))
+        job_n += 1
 
-    for dirpath, dirnames, filenames in os.walk(DATA_ROOT):
-        for filename in filenames:
-            s_job_q.put((query, os.path.join(dirpath, filename)))
-            job_n += 1
-
+    print 'File query:', os.path.basename(args[1])
+    print '---------------------------------------'
     while True:
         filepath, sim = s_result_q.get()
         job_n -= 1
-        if sim != (hash(filepath) + hash(query)):
-            print 'HASH MISMATCH:', filepath, sim
-        else:
-            print filepath, 'OK'
+
+        print 'File:', os.path.basename(filepath), 'Similarity:', sim
         if not job_n:
             break
 
@@ -104,17 +91,11 @@ def server(query):
     manager.shutdown()
 
 
-def client():
+def client(args):
+    # args --> (delta, query, root)
     manager = client_manager(IP, PORT, AUTH)
     job_q = manager.get_job_q()
     result_q = manager.get_result_q()
 
     nprocs = mp.cpu_count() / 2
-    mp_dmmg(job_q, result_q, nprocs)
-
-
-if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == '-q':
-        server(sys.argv[2])
-    else:
-        client()
+    worker_manager(job_q, result_q, nprocs)

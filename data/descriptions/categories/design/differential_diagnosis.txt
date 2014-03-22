@@ -19,8 +19,3 @@ vector, or concluding that none exists (in which case we say that the two
 diagnoses are indistinguishable).  (As usual, faulty circuit gates are either
 stuck-at-0 or stuck-at-1, respectively outputting value 0 or 1 independently of
 the input.)
-
-In the example adder circuit below, to differentiate candidate faults Gate1
-stuck-at-1 and Gate3 stuck-at-1, a possible input test vector is <111>, since
-with Gate1 stuck-at-1 the output would be <01> (S=0,C=1), whereas with Gate3
-stuck-at-1 the output would be <11> (the same as without faults).

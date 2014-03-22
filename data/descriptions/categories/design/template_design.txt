@@ -19,16 +19,6 @@ many distinct templates to produce, and secondly, which variations, and how
 many copies of each, to include on each template.  The following example is
 based on data from an order for cartons for different varieties of dry
 cat-food.
-
-Variation	 Order Quantity
-Liver	 250,000
-Rabbit	 255,000
-Tuna	 260,000
-Chicken Twin	 500,000
-Pilchard Twin	 500,000
-Chicken	 800,000
-Pilchard	 1,100,000
-Total	 3,665,000
 Each design of carton is made from an identically sized and shaped piece of
 board. Nine cartons can be printed on each mother sheet, and several different
 designs can be printed at once, on the same mother sheet. (Hence, at least
@@ -49,17 +39,5 @@ allows the overall over-production to be reduced. This is not a sensible option
 for the catfood problem, because it leads to under-production of all the
     designs.
 
-The optimal solutions for the catfood problem are shown below. For each
-template, the table gives a list of the number of slots allocated to each
-design, e.g. [1,1,1,1,1,2,2,] means that 1 slot is allocated to each of the
-first five designs and two each to the last two.
 
-No. of	 Layouts	 No. of Pressings	 Total pressings
-templates		 of each template	
-1	 [1,1,1,1,1,2,2]	 550,000	 550,000
-2	 [0,0,0,0,0,2,7]	 158,000	
-[1,1,1,2,2,2,0]	 260,000	 418,000
-3	 [0,5,3,0,0,1,0]	 51,000	
-[0,0,1,0,0,7,1]	 107,000	
-[1,0,0,2,2,0,4]	 250,000	 408,000
 

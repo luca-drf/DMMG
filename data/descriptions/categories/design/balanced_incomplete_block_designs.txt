@@ -11,13 +11,4 @@ different blocks, and every two distinct objects occur together in exactly
 lambda blocks. Another way of defining a BIBD is in terms of its incidence
 matrix, which is a v by b binary matrix with exactly r ones per row, k ones per
 column, and with a scalar product of lambda between any pair of distinct rows.
-A BIBD is therefore specified by its parameters (v,b,r,k,lambda). An example of
-a solution for (7,7,3,3,1) is: 
 
-0 1 1 0 0 1 0 
-1 0 1 0 1 0 0 
-0 0 1 1 0 0 1 
-1 1 0 0 0 0 1 
-0 0 0 0 1 1 1 
-1 0 0 1 0 1 0 
-0 1 0 1 1 0 0 

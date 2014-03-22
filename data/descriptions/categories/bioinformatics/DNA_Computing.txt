@@ -7,6 +7,6 @@ as large a set S of strings (words) of length 8 over the alphabet W = { A,C,G,T
 Each word in S has 4 symbols from { C,G }; Each pair of distinct words in S
 differ in at least 4 positions; and Each pair of words x and y in S (where x
 and y may be identical) are such that xR and yC differ in at least 4 positions.
-Here, ( x1,…,x8 )R = ( x8,…,x1 ) is the reverse of ( x1,…,x8 ) and ( y1,…,y8 )C
-is the Watson-Crick complement of ( y1,…,y8 ), i.e. the word where each A is
+Here, ( x1,...,x8 )R = ( x8,...,x1 ) is the reverse of ( x1,...,x8 ) and ( y1,...,y8 )C
+is the Watson-Crick complement of ( y1,...,y8 ), i.e. the word where each A is
 replaced by a T and vice versa and each C is replaced by a G and vice versa.
