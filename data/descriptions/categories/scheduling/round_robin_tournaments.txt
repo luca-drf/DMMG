@@ -6,12 +6,6 @@ first team in each slot plays at home, whilst the second plays the first team
 away. A tournament must satisfy the following three constraints: every team
 plays once a week; every team plays at most twice in the same period over the
 tournament; every team plays every other team.
-An example schedule for 8 teams is: 
-week 1	 week 2	 week 3	 week 4	 week 5	 week 6	 week 7	
-period 1	 0 v 1	 0 v 2	 4 v 7	 3 v 6	 3 v 7	 1 v 5	 2 v 4	
-period 2	 2 v 3	 1 v 7	 0 v 3	 5 v 7	 1 v 4	 0 v 6	 5 v 6	
-period 3	 4 v 5	 3 v 5	 1 v 6	 0 v 4	 2 v 6	 2 v 7	 0 v 7	
-period 4	 6 v 7	 4 v 6	 2 v 5	 1 v 2	 0 v 5	 3 v 4	 1 v 3	
 One extension of the problem is to double round robin tournaments in which each
 team plays every other team (as before) but now both at home and away. This is
 often solved by repeating the round robin pattern, but swapping home games for

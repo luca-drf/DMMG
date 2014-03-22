@@ -1,27 +1,7 @@
 A Distribution Problem with Wagner-Whitin Costs
 
 A basic distribution problem is described as follows. Given:
-A supply chain structure of stocking points divided into L levels, such as:
-              |                   Level
-              V
-            +---+
-            | F |                   3
-            +---+
-          _/     \_
-         /         \
-        V           V
-      +---+       +---+
-      | D |       | E |             2
-      +---+       +---+
-    _/     \_          \_
-   /         \           \
-  V           V           V
-+---+       +---+       +---+
-| A |       | B |       | C |       1
-+---+       +---+       +---+
-  |           |           |
-  V           V           V
-
+A supply chain structure of stocking points divided into L levels.
 A holding cost (c) per unit of inventory at each stocking point, where it is
 assumed that a parent has lower holding cost than any of its children.  A
 procurement cost (c0) per stocking point (per order, not per unit of inventory

@@ -50,8 +50,8 @@ def create_ordervec(corpus, joint_word_set):
                     best_index = j + 1
                 # Check if we found a (the best) similar word
             if best_sim_val >= threshold:
-                print element, best_sim_val, threshold
-                print corpus[best_index - 1]
+                # print element, best_sim_val, threshold
+                # print corpus[best_index - 1]
                 # If the related word is similar more than the threshold,
                 # use its index in the ordered array
                 word_order_vector[idx] = best_index
