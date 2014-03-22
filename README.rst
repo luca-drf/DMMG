@@ -17,7 +17,7 @@ Usage
 ----------------------------
 ::
 
-    % python dmmg <delta> <file1> <file2>
+    % python dmmg [-h] [-d {c,s}] <delta> <query> <rootpath>
 
 Contributors
 ------------
