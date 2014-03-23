@@ -15,8 +15,12 @@ setup(
     description = (""),
     license = "Apache License v2",
     keywords = "",
-    url = "",
+    url = "https://github.com/radome/DMMG",
     packages = ['dmmg', 'dmmg/tests'],
+    install_requires=[
+        'nltk',
+        'numpy',
+    ],
     long_description = read('README.rst'),
     classifiers=[
         "Development Status :: 1 - Planning",

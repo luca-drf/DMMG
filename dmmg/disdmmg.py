@@ -91,7 +91,7 @@ def server(args):
     manager.shutdown()
 
 
-def client(args):
+def client():
     # args --> (delta, query, root)
     manager = client_manager(IP, PORT, AUTH)
     job_q = manager.get_job_q()
