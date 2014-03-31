@@ -8,6 +8,26 @@ from multiprocessing import Pool
 from time import time
 import json
 import os
+from nltk import download
+from nltk.downloader import Downloader
+from sets import Set
+
+
+def nltk_updater():
+    packages = Set(['brown',
+                    'wordnet',
+                    'wordnet_ic',
+                    'maxent_treebank_pos_tagger',
+                    'universal_tagset'])
+    d = Downloader()
+    for dirpath, dirnames, filenames in os.walk(d.default_download_dir()):
+        module = os.path.basename(dirpath)
+        if module in packages:
+            packages.remove(module)
+    for module in packages:
+        print 'Missing', module
+        download(module)
+    del d
 
 
 def filepath_gen(rootpath):

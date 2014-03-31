@@ -17,7 +17,7 @@ Usage
 ----------------------------
 ::
 
-    % python dmmg [-h] [-d {c,s}] <delta> <query> <rootpath>
+    % python dmmg [-h] [-c | -s] <delta> <query> <rootpath>
 
 Contributors
 ------------
