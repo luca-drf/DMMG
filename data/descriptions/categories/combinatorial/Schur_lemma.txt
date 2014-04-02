@@ -1,13 +1,1 @@
-Schur's lemma
-
-The problem is to put n balls labelled {1,...n} into 3 boxes so that for any
-triple of balls (x,y,z) with x+y=z, not all are in the same box. This has a
-solution iff n < 14.  The problem can be formulated as an 0-1 problem using the
-variables, M_ij (i in [1,n], j in [1,3]) with M_ij true iff ball i is in box j.
-The constraints are that a ball must be in exactly one box, M_i1 + M_i2 + M_i3
-= 1 for all i in [1,n]. And for each x+y=z and j in [1,3], not (M_xj and M_yj
-and M_zj). This converts to, (1-M_xj) + (1-M_yj) + (1-M_zj) >= 1 or, M_xj +
-M_yj + M_zj <= 2.
-
-One natural generalization is to consider partitioning into k boxes (for
-k>3).
+The problem is to put n numbers into k boxes so that no box contains three numbers such that the sum of the first two elements equals the third element.

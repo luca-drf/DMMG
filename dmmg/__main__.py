@@ -1,8 +1,10 @@
-import disdmmg as dis
+import dmmgclient as client
+import dmmgserver as server
 import argparse
-from maindmmg import dmmg, filepath_gen, nltk_updater
+from dmmgmain import dmmg, filepath_gen, nltk_updater
 import os
 import sys
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='== DMMG ==')
@@ -24,9 +26,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.client:
-        dis.client()
+        client.start()
     elif args.server:
-        dis.server((args.delta, args.query, args.rootpath))
+        server.start((args.delta, args.query, args.rootpath))
     else:
         if os.path.isfile(args.rootpath):
             dmmg(args.delta, args.query, args.rootpath)

@@ -1,6 +1,0 @@
-magic hexagon
-
-A magic hexagon consists of the number 1 to 19 arranged in a hexagonal pattern:
-We have a constraint that all diagonals sum to 38. That is, A+B+C = D+E+F+G = ... = Q+R+S = 38, A+D+H = B+E+I+M = ... = L+P+S = 38, C+G+L = B+F+K+P = ... = H+M+Q = 38.
-
-The problem can be generalized to other sizes. This is the diameter 5 problem.
