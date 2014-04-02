@@ -25,8 +25,8 @@ def dmmg_worker(job_q, result_q):
         try:
             job = job_q.get_nowait()
             print 'dmmg %s got %s file...' % (myname, job)
-            sim = dmmg(job[0], job[1], job[2])
-            result_q.put((job[2], sim))
+            sim, sem, wos = dmmg(job[0], job[1], job[2])
+            result_q.put((job[2], sim, sem, wos))
             print '  %s done' % myname
         except Queue.Empty:
             return

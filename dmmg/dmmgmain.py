@@ -126,4 +126,4 @@ def dmmg(delta, file1, file2):
                 semantic_vectors[0].get(), semantic_vectors[1].get(),
                 sem_measure, overall_similarity, (tw_start, tw_stop))
 
-    return overall_similarity
+    return overall_similarity, sem_measure, wos_measure

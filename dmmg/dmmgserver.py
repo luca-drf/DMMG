@@ -23,6 +23,7 @@ def server_manager(port, AUTH):
 
 
 def start(args):
+    tw_start = time.time()
     # args --> (delta, query, root)
     manager = server_manager(settings.PORT, settings.AUTH)
     s_job_q = manager.get_job_q()
@@ -36,13 +37,19 @@ def start(args):
     print 'File query:', os.path.basename(args[1])
     print '---------------------------------------'
     while True:
-        filepath, sim = s_result_q.get()
+        filepath, sim, sem, wos = s_result_q.get()
         job_n -= 1
 
-        print 'File:', os.path.basename(filepath), 'Similarity:', sim
+        print '%s SIM: %.3f SE: %.3f WO: %.3f' % (os.path.basename(filepath),
+                                                  sim,
+                                                  sem,
+                                                  wos)
         if not job_n:
             break
 
     print '--- DONE ---'
+    tw_stop = time.time()
+    print 'Computed in %s sec.' % (tw_stop - tw_start)
+
     time.sleep(2)
     manager.shutdown()
