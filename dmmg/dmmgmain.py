@@ -27,7 +27,6 @@ def nltk_updater():
     for module in packages:
         print 'Missing', module
         download(module)
-    del d
 
 
 def filepath_gen(rootpath):
