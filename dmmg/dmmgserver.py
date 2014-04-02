@@ -4,6 +4,7 @@ from multiprocessing.managers import SyncManager
 from dmmgmain import filepath_gen
 import os
 import settings
+from sets import Set
 
 
 def server_manager(port, AUTH):
@@ -22,6 +23,16 @@ def server_manager(port, AUTH):
     return manager
 
 
+def file_manager(query_path, test_path):
+    queryset = Set([])
+    testset = Set([])
+    for query_filepath in filepath_gen(query_path):
+        queryset.add(query_filepath)
+    for test_filepath in filepath_gen(test_path):
+        testset.add(test_filepath)
+    return queryset, testset
+
+
 def start(args):
     tw_start = time.time()
     # args --> (delta, query, root)
@@ -29,21 +40,27 @@ def start(args):
     s_job_q = manager.get_job_q()
     s_result_q = manager.get_result_q()
 
+    queryset, testset = file_manager(args[1], args[2])
     job_n = 0
-    for filepath in filepath_gen(args[2]):
-        s_job_q.put((args[0], args[1], filepath))
-        job_n += 1
+    for query_filepath in queryset:
+        try:
+            testset.remove(query_filepath)
+        except KeyError:
+            pass
+        for test_filepath in testset:
+            s_job_q.put((args[0], query_filepath, test_filepath))
+            job_n += 1
 
-    print 'File query:', os.path.basename(args[1])
-    print '---------------------------------------'
     while True:
-        filepath, sim, sem, wos = s_result_q.get()
+        query_filepath, test_filepath, sim, sem, wos = s_result_q.get()
         job_n -= 1
 
-        print '%s SIM: %.3f SE: %.3f WO: %.3f' % (os.path.basename(filepath),
-                                                  sim,
-                                                  sem,
-                                                  wos)
+        print ('Q: %s\nT: %s\nSIM: %.3f SE: %.3f WO: %.3f\n'
+               % (os.path.basename(query_filepath),
+                  os.path.basename(test_filepath),
+                  sim,
+                  sem,
+                  wos))
         if not job_n:
             break
 

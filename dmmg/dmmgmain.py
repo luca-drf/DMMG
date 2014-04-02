@@ -29,11 +29,14 @@ def nltk_updater():
         download(module)
 
 
-def filepath_gen(rootpath):
-    for dirpath, dirnames, filenames in os.walk(rootpath):
-        for filename in filenames:
-            if not filename.startswith('.'):
-                yield os.path.join(dirpath, filename)
+def filepath_gen(path):
+    if os.path.isfile(path):
+        yield path
+    else:
+        for dirpath, dirnames, filenames in os.walk(path):
+            for filename in filenames:
+                if not filename.startswith('.'):
+                    yield os.path.join(dirpath, filename)
 
 
 def import_file(filepath):

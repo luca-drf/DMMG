@@ -18,7 +18,7 @@ if __name__ == "__main__":
                         help="Weight of syntax vs. semantic",
                         type=float)
     parser.add_argument("query",
-                        help="Filepath of the query")
+                        help="Path of the queries")
     parser.add_argument("rootpath",
                         help="Path to the database root")
 
@@ -32,9 +32,9 @@ if __name__ == "__main__":
     else:
         if os.path.isfile(args.rootpath):
             dmmg(args.delta, args.query, args.rootpath)
-        elif os.path.isdir(args.rootpath):
+        elif os.path.isdir(args.rootpath) and os.path.isfile(args.query):
             for filepath in filepath_gen(args.rootpath):
                 dmmg(args.delta, args.query, filepath)
         else:
-            sys.stderr.write('Provide a valid root path.')
+            sys.stderr.write('Provide a valid path.')
             exit(1)
