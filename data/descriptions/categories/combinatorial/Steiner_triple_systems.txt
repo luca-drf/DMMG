@@ -1,2 +1,1 @@
-The ternary Steiner problem of order n consists of finding a set of n(n-1)/6 triples of distinct integer elements from 1 to n such that any two triples have
-at most one common element. 
+The ternary Steiner problem of order n consists of finding a set of n(n-1)/6 triples of distinct integer elements from 1 to n such that any two triples have at most one common element.
