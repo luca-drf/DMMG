@@ -42,9 +42,10 @@ def filepath_gen(path):
 def import_file(filepath):
     """ Take a filepath and return a list of tagged words """
     tokens = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            tokens.extend(word_tokenize(line))
+    f = open(filepath, 'r')
+    for line in f:
+        tokens.extend(word_tokenize(line))
+    f.close()
     return pos_tag(tokens)
 
 
@@ -112,8 +113,9 @@ def dmmg(delta, file1, file2):
 
     print 'Creating semantic vectors...'
     # fdist = FreqDist(brown.words())
-    with open('dmmg/fdist.json', 'r') as f:
-        freqs = json.load(f)
+    f = open('dmmg/fdist.json', 'r')
+    freqs = json.load(f)
+    f.close()
     fdist = FreqDist(freqs)
 
     semantic_vectors = [p.apply_async(sv.generate, (c, joint_word_set, fdist))
