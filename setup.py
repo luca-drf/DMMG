@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'nltk',
         'numpy',
+        'ply'
     ],
     long_description = read('README.rst'),
     classifiers=[
