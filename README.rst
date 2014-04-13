@@ -13,6 +13,7 @@ Requirements
 - Python 2.7
 - nltk package http://nltk.org/
 - numpy package http://www.numpy.org/
+- PLY http://www.dabeaz.com/ply/
 
 Usage
 ----------------------------
