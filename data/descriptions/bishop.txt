@@ -1,0 +1,1 @@
+The fourteen bishops puzzle is the problem of placing fourteen chess bishops on an chessboard so that no two bishops attack each other

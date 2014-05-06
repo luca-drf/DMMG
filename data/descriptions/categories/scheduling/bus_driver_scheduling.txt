@@ -1,1 +1,0 @@
-This problems consists of a given set of tasks to cover and a large set of possible shifts, where each shift covers a subset of the tasks and has an associated cost. We must select a subset of possible shifts that covers each piece of work once and only once. This means that the goal is to minimize the number of shifts.

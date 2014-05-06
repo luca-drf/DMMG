@@ -1,4 +1,0 @@
-Construct two n x n matrices such that the determinant of the first matrix is one and the determinant of the
-second matrix is either one or minus one.
-The elements of the diagonal of the first matrix must be not equal to one or minus one.
-Moreover, the elements of the second matrix are the squares of the elements of the first matrix.

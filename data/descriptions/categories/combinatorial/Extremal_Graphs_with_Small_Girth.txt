@@ -1,1 +1,0 @@
-The problem is to find the maximal number of edges in a graph with m vertices and with no cycles of length k or less.

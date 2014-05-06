@@ -1,1 +1,0 @@
-The problem is to color the edges of a complete graph with n nodes using at most k colours, in such a way that any triangle in the graph has at most two edges with the same color. 

@@ -1,1 +1,0 @@
-An order n quasigroup is a n x n multiplication table in which each element occurs once in every row and column.

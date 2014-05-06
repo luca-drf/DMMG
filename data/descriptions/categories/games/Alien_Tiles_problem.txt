@@ -1,2 +1,0 @@
-You are presented with a square grid, with each square a given color. 
-Each grid square can be one of some number of colors. Moves in the puzzle are made by clicking on one of the grid squares. Each click rotates the color by one in both the clicked square, and all other squares in the same row and column. Given a starting state and a goal state of the grid, the puzzle is to find a set of clicks of squares that achieves the goal.

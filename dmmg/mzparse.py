@@ -1,20 +1,86 @@
-import sys
+# import sys
 import ply.yacc as yacc
 # Get the token map from the lexer.  This is required.
 from mzlex import tokens
 
+from distances import lcs_tree_vector, lcs_print
+
 
 class Node:
-    def __init__(self, typ, leafs, children):
+    def __init__(self, typ, leafs, children, prod):
         self.typ = typ
         self.leafs = leafs
         self.children = children
+        self.prod = prod
 
     def __str__(self):
         ch_string = ''
+        leaf_string = ''
+        for leaf in self.leafs:
+            leaf_string += self.prod[leaf - 1].__str__()
         for child in self.children:
-            ch_string += child.__str__()
-        return '(%s: %s)' % (self.typ, ch_string)
+            ch_string += self.prod[child - 1].typ
+        return '(%s: %s %s)' % (self.typ, leaf_string, ch_string)
+
+    def dump_tree(self):
+        ch_string = ''
+        leaf_string = ''
+        for leaf in self.leafs:
+            leaf_string += self.prod[leaf - 1].__str__()
+        for child in self.children:
+            ch_string += self.prod[child - 1].dump_tree()
+        return '(%s: %s %s)' % (self.typ, leaf_string, ch_string)
+
+    def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+        if self.typ == other.typ:
+            if len(self.prod) == len(other.prod):
+                for i in xrange(len(self.prod)):
+                    if (type(self.prod[i]) == str and
+                        type(other.prod[i]) == str):
+                        if self.prod[i] != other.prod[i]:
+                            return False
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def dump_tree_terminals(self):
+        """Return a string containing the terminals producted by the grammar
+        that has generated this tree."""
+        ch_string = ''
+        for p in self.prod:
+            if type(p) == str:
+                ch_string += (p + ' ')
+            else:
+                ch_string += p.dump_tree_terminals()
+        return '%s' % (ch_string)
+
+    def dump_subtree_terminals(self, lev):
+        """Return a string containing the terminals producted by the grammar
+        that has generated this tree. The lev parameter specify when to stop"""
+        ch_string = ''
+        lev -= 1
+        for p in self.prod:
+            if type(p) == str:
+                ch_string += (p + ' ')
+            else:
+                if lev == 0:
+                    ch_string += (p.typ + ' ')
+                else:
+                    temp_ch_string, lev = p.dump_subtree_terminals(lev)
+                    ch_string += temp_ch_string
+        return (ch_string, lev)
+
+    def create_tree_vector(self):
+        """Return a vector containing nodes in a dfs order"""
+        tree_vector = [self]
+        for child in self.children:
+            tree_vector.extend(self.prod[child - 1].create_tree_vector())
+        return tree_vector
+
 
 ## ITEMS ##
 
@@ -22,9 +88,9 @@ def p_model(p):
     """model : epsilon
              | item ';' model"""
     if len(p) == 4:
-        p[0] = Node('model', [p[2]], [p[1], p[3]])
+        p[0] = Node('model', [2], [1, 3], p[1:])
     else:
-        p[0] = Node('model', [], [p[1]])
+        p[0] = Node('model', [], [1], p[1:])
 
 
 def p_item(p):
@@ -40,21 +106,21 @@ def p_item(p):
             | test_item
             | function_item
             | annotation_item"""
-    p[0] = Node('item', [], [p[1]])
+    p[0] = Node('item', [], [1], p[1:])
 
 
 def p_type_inst_syn_item(p):
     """type_inst_syn_item : TYPE IDENT annotations '=' ti_expr"""
-    p[0] = Node('type_inst_syn_item', [p[1], p[2], p[4]], [p[3], p[5]])
+    p[0] = Node('type_inst_syn_item', [1, 2, 4], [3, 5], p[1:])
 
 
 def p_enum_item(p):
     """enum_item : ENUM IDENT annotations
                  | ENUM IDENT annotations '=' enum_cases"""
     if len(p) == 4:
-        p[0] = Node('enum_item', [p[1], p[2]], [p[3]])
+        p[0] = Node('enum_item', [1, 2], [3], p[1:])
     else:
-        p[0] = Node('enum_item', [p[1], p[2], p[4]], [p[3], p[5]])
+        p[0] = Node('enum_item', [1, 2, 4], [3, 5], p[1:])
 
 
 def p_enum_cases(p):
@@ -62,49 +128,49 @@ def p_enum_cases(p):
        enum_case_star : epsilon
                       | ',' enum_case enum_case_star"""
     if len(p) == 5:
-        p[0] = Node('enum_cases', [p[1], p[4]], [p[2], p[3]])
+        p[0] = Node('enum_cases', [1, 4], [2, 3], p[1:])
     elif len(p) == 4:
-        p[0] = Node('enum_case_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('enum_case_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('enum_case_star', [], [p[1]])
+        p[0] = Node('enum_case_star', [], [1], p[1:])
 
 
 def p_enum_case(p):
     """enum_case : IDENT
                  | IDENT '(' ti_expr_and_id ti_expr_and_id_star ')'"""
     if len(p) == 6:
-        p[0] = Node('enum_case', [p[1], p[2], p[5]], [p[3], p[4]])
+        p[0] = Node('enum_case', [1, 2, 5], [3, 4], p[1:])
     else:
-        p[0] = Node('enum_case', [p[1]], [])
+        p[0] = Node('enum_case', [1], [], p[1:])
 
 
 def p_ti_expr_and_id(p):
     """ti_expr_and_id : ti_expr ':' IDENT"""
-    p[0] = Node('ti_expr_and_id', [p[2], p[3]], [p[1]])
+    p[0] = Node('ti_expr_and_id', [2, 3], [1], p[1:])
 
 
 def p_include_item(p):
     """include_item : INCLUDE string_literal"""
-    p[0] = Node('include_item', [p[1]], [p[2]])
+    p[0] = Node('include_item', [1], [2], p[1:])
 
 
 def p_var_decl_item(p):
     """var_decl_item : ti_expr_and_id annotations
                      | ti_expr_and_id annotations '=' expr"""
     if len(p) == 3:
-        p[0] = Node('var_decl_item', [], [p[1], p[2]])
+        p[0] = Node('var_decl_item', [], [1, 2], p[1:])
     else:
-        p[0] = Node('var_decl_item', [p[3]], [p[1], p[2], p[4]])
+        p[0] = Node('var_decl_item', [3], [1, 2, 4], p[1:])
 
 
 def p_assign_item(p):
     """assign_item : IDENT '=' expr"""
-    p[0] = Node('assign_item', [p[1], p[2]], [p[3]])
+    p[0] = Node('assign_item', [1, 2], [3], p[1:])
 
 
 def p_constraint_item(p):
     """constraint_item : CONSTRAINT expr"""
-    p[0] = Node('constraint_item', [p[1]], [p[2]])
+    p[0] = Node('constraint_item', [1], [2], p[1:])
 
 
 def p_solve_item(p):
@@ -112,52 +178,52 @@ def p_solve_item(p):
                   | SOLVE annotations MINIMIZE expr
                   | SOLVE annotations MAXIMIZE expr"""
     if len(p) == 4:
-        p[0] = Node('solve_item', [p[1], p[3]], [p[2]])
+        p[0] = Node('solve_item', [1, 3], [2], p[1:])
     else:
-        p[0] = Node('solve_item', [p[1], p[3]], [p[2], p[4]])
+        p[0] = Node('solve_item', [1, 3], [2, 4], p[1:])
 
 
 def p_output_item(p):
     """output_item : OUTPUT expr"""
-    p[0] = Node('output_item', [p[1]], [p[2]])
+    p[0] = Node('output_item', [1], [2], p[1:])
 
 
 def p_annotation_item(p):
     """annotation_item : ANNOTATION IDENT params"""
-    p[0] = Node('annotation_item', [p[1], p[2]], [p[3]])
+    p[0] = Node('annotation_item', [1, 2], [3], p[1:])
 
 
 def p_predicate_item(p):
     """predicate_item : PREDICATE operation_item_tail"""
-    p[0] = Node('predicate_item', [p[1]], [p[2]])
+    p[0] = Node('predicate_item', [1], [2], p[1:])
 
 
 def p_test_item(p):
     """test_item : TEST operation_item_tail"""
-    p[0] = Node('test_item', [p[1]], [p[2]])
+    p[0] = Node('test_item', [1], [2], p[1:])
 
 
 def p_function_item(p):
     """function_item : FUNCTION ti_expr ':' operation_item_tail"""
-    p[0] = Node('function_item', [p[1], p[3]], [p[2], p[4]])
+    p[0] = Node('function_item', [1, 3], [2, 4], p[1:])
 
 
 def p_operation_item_tail(p):
     """operation_item_tail : IDENT params annotations
                            | IDENT params annotations '=' expr"""
     if len(p) == 4:
-        p[0] = Node('operation_item_tail', [p[1]], [p[2], p[3]])
+        p[0] = Node('operation_item_tail', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('operation_item_tail', [p[1], p[4]], [p[2], p[3], p[5]])
+        p[0] = Node('operation_item_tail', [1, 4], [2, 3, 5], p[1:])
 
 
 def p_params(p):
     """params : epsilon
               | '(' ti_expr_and_id ti_expr_and_id_star ')'"""
     if len(p) == 5:
-        p[0] = Node('params', [p[1], p[4]], [p[2], p[3]])
+        p[0] = Node('params', [1, 4], [2, 3], p[1:])
     else:
-        p[0] = Node('params', [], [p[1]])
+        p[0] = Node('params', [], [1], p[1:])
 
 
 ## TYPE-INST-EXPRESSIONS ##
@@ -166,14 +232,14 @@ def p_ti_expr(p):
     """ti_expr : '(' ti_expr ':' IDENT WHERE expr ')'
                | base_ti_expr"""
     if len(p) == 8:
-        p[0] = Node('ti_expr', [p[1], p[3], p[4], p[5], p[7]], [p[2], p[6]])
+        p[0] = Node('ti_expr', [1, 3, 4, 5, 7], [2, 6], p[1:])
     else:
-        p[0] = Node('ti_expr', [], [p[1]])
+        p[0] = Node('ti_expr', [], [1], p[1:])
 
 
 def p_base_ti_expr(p):
     """base_ti_expr : var_par base_ti_expr_tail"""
-    p[0] = Node('base_ti_expr', [], [p[1], p[2]])
+    p[0] = Node('base_ti_expr', [], [1, 2], p[1:])
 
 
 def p_var_par(p):
@@ -181,9 +247,9 @@ def p_var_par(p):
                | PAR
                | VAR"""
     if type(p[1]) is str:
-        p[0] = Node('var_par', [p[1]], [])
+        p[0] = Node('var_par', [1], [], p[1:])
     else:
-        p[0] = Node('var_par', [], [p[1]])
+        p[0] = Node('var_par', [], [1], p[1:])
 
 
 def p_base_ti_expr_tail(p):
@@ -202,77 +268,77 @@ def p_base_ti_expr_tail(p):
                          | '{' expr expr_star '}'
                          | num_expr DOTS num_expr"""
     if len(p) == 5:
-        p[0] = Node('base_ti_expr_tail', [p[1], p[4]], [p[2], p[3]])
+        p[0] = Node('base_ti_expr_tail', [1, 4], [2, 3], p[1:])
     elif len(p) == 4:
-        p[0] = Node('base_ti_expr_tail', [p[2]], [p[1], p[3]])
+        p[0] = Node('base_ti_expr_tail', [2], [1, 3], p[1:])
     elif (p[1] == 'ident' or
           p[1] == 'bool' or
           p[1] == 'int' or
           p[1] == 'float' or
           p[1] == 'string' or
           p[1] == 'ann'):
-        p[0] = Node('base_ti_expr_tail', [p[1]], [])
+        p[0] = Node('base_ti_expr_tail', [1], [], p[1:])
     else:
-        p[0] = Node('base_ti_expr_tail', [], [p[1]])
+        p[0] = Node('base_ti_expr_tail', [], [1], p[1:])
 
 
 def p_set_ti_expr_tail(p):
     """set_ti_expr_tail : SET OF ti_expr"""
-    p[0] = Node('set_ti_expr_tail', [p[1], p[2]], [p[3]])
+    p[0] = Node('set_ti_expr_tail', [1, 2], [3], p[1:])
 
 
 def p_array_ti_expr_tail(p):
     """array_ti_expr_tail : ARRAY '[' ti_expr ti_expr_star ']' OF ti_expr
                           | LIST OF ti_expr"""
     if len(p) == 8:
-        p[0] = Node('array_ti_expr_tail', [p[1], p[2], p[5], p[6]], [p[3], p[4], p[7]])
+        p[0] = Node('array_ti_expr_tail', [1, 2, 5, 6], [3, 4, 7], p[1:])
     else:
-        p[0] = Node('array_ti_expr_tail', [p[1], p[2]], [p[3]])
+        p[0] = Node('array_ti_expr_tail', [1, 2], [3], p[1:])
 
 
 def p_tuple_ti_expr_tail(p):
     """tuple_ti_expr_tail : TUPLE '(' ti_expr ti_expr_star ')'"""
-    p[0] = Node('tuple_ti_expr_tail', [p[1], p[2], p[5]], [p[3], p[4]])
+    p[0] = Node('tuple_ti_expr_tail', [1, 2, 5], [3, 4], p[1:])
 
 
 def p_record_ti_exprtail(p):
     """record_ti_expr_tail  : RECORD '(' ti_expr_and_id ti_expr_and_id_star ')'"""
-    p[0] = Node('record_ti_expr_tail', [p[1], p[2], p[5]], [p[3], p[4]])
+    p[0] = Node('record_ti_expr_tail', [1, 2, 5], [3, 4], p[1:])
 
 
 def p_ti_variable_expr_tail(p):
     """ti_variable_expr_tail : IDENT
                              | ANY IDENT"""
     if len(p) == 2:
-        p[0] = Node('ti_variable_expr_tail', [p[1]], [])
+        p[0] = Node('ti_variable_expr_tail', [1], [], p[1:])
     else:
-        p[0] = Node('ti_variable_expr_tail', [p[1], p[2]], [])
+        p[0] = Node('ti_variable_expr_tail', [1, 2], [], p[1:])
 
 
 def p_op_ti_expr_tail(p):
     """op_ti_expr_tail : OP '(' ti_expr ':' '(' ti_expr ti_expr_star ')' ')'"""
-    p[0] = Node('op_ti_expr_tail', [p[1], p[2], p[4], p[5], p[8], p[9]], [p[3], p[6], p[7]])
+    p[0] = Node('op_ti_expr_tail', [1, 2, 4, 5, 8, 9], [3, 6, 7], p[1:])
 
 
 ## EXPRESSIONS ##
 
 def p_expr(p):
     """expr : expr_atom expr_binop_tail"""
-    p[0] = Node('expr', [], [p[1], p[2]])
+    p[0] = Node('expr', [], [1, 2], p[1:])
 
 
 def p_expr_atom(p):
     """expr_atom : expr_atom_head expr_atom_tail annotations"""
-    p[0] = Node('expr_atom', [], [p[1], p[2], p[3]])
+    p[0] = Node('expr_atom', [], [1, 2, 3], p[1:])
 
 
 def p_expr_binop_tail(p):
     """expr_binop_tail : epsilon
                        | bin_op expr"""
     if len(p) == 2:
-        p[0] = Node('expr_binop_tail', [], [p[1]])
+        p[0] = Node('expr_binop_tail', [], [1], p[1:])
     else:
-        p[0] = Node('expr_binop_tail', [], [p[1], p[2]])
+        p[0] = Node('expr_binop_tail', [], [1, 2], p[1:])
 
 
 def p_expr_atom_head(p):
@@ -301,13 +367,13 @@ def p_expr_atom_head(p):
                       | call_expr
                       | gen_call_expr"""
     if len(p) == 2 and p[1] == '_':
-        p[0] = Node('expr_atom_head', [p[1]], [])
+        p[0] = Node('expr_atom_head', [1], [], p[1:])
     elif len(p) == 3:
-        p[0] = Node('expr_atom_head', [], [p[1], p[2]])
+        p[0] = Node('expr_atom_head', [], [1, 2], p[1:])
     elif len(p) == 4:
-        p[0] = Node('expr_atom_head', [p[1], p[3]], [p[2]])
+        p[0] = Node('expr_atom_head', [1, 3], [2], p[1:])
     else:
-        p[0] = Node('expr_atom_head', [], [p[1]])
+        p[0] = Node('expr_atom_head', [], [1], p[1:])
 
 
 def p_expr_atom_tail(p):
@@ -316,28 +382,28 @@ def p_expr_atom_tail(p):
                       | tuple_access_tail expr_atom_tail
                       | record_access_tail expr_atom_tail"""
     if len(p) == 2:
-        p[0] = Node('expr_atom_tail', [], [p[1]])
+        p[0] = Node('expr_atom_tail', [], [1], p[1:])
     else:
-        p[0] = Node('expr_atom_tail', [], [p[1], p[2]])
+        p[0] = Node('expr_atom_tail', [], [1, 2], p[1:])
 
 
 def p_num_expr(p):
     """num_expr : num_expr_atom num_expr_binop_tail"""
-    p[0] = Node('num_expr', [], [p[1], p[2]])
+    p[0] = Node('num_expr', [], [1, 2], p[1:])
 
 
 def p_num_expr_atom(p):
     """num_expr_atom : num_expr_atom_head expr_atom_tail annotations"""
-    p[0] = Node('num_expr_atom', [], [p[1], p[2], p[3]])
+    p[0] = Node('num_expr_atom', [], [1, 2, 3], p[1:])
 
 
 def p_num_expr_binop_tail(p):
     """num_expr_binop_tail : epsilon
                            | num_bin_op num_expr"""
     if len(p) == 2:
-        p[0] = Node('num_expr_binop_tail', [], [p[1]])
+        p[0] = Node('num_expr_binop_tail', [], [1], p[1:])
     else:
-        p[0] = Node('num_expr_binop_tail', [], [p[1], p[2]])
+        p[0] = Node('num_expr_binop_tail', [], [1, 2], p[1:])
 
 
 def p_num_expr_atom_head(p):
@@ -352,26 +418,26 @@ def p_num_expr_atom_head(p):
                           | call_expr
                           | gen_call_expr"""
     if len(p) == 2:
-        p[0] = Node('num_expr_atom_head', [], [p[1]])
+        p[0] = Node('num_expr_atom_head', [], [1], p[1:])
     elif len(p) == 3:
-        p[0] = Node('num_expr_atom_head', [], [p[1], p[2]])
+        p[0] = Node('num_expr_atom_head', [], [1, 2], p[1:])
     else:
-        p[0] = Node('num_expr_atom_head', [p[1], p[3]], [p[2]])
+        p[0] = Node('num_expr_atom_head', [1, 3], [2], p[1:])
 
 
 def p_builtin_op(p):
     """builtin_op : builtin_bin_op
                   | builtin_un_op"""
-    p[0] = Node('builtin_op', [], [p[1]])
+    p[0] = Node('builtin_op', [], [1], p[1:])
 
 
 def p_bin_op(p):
     """bin_op : builtin_bin_op
               | QUOT IDENT QUOT"""
     if len(p) == 4:
-        p[0] = Node('bin_op', [p[1], p[2], p[3]], [])
+        p[0] = Node('bin_op', [1, 2, 3], [], p[1:])
     else:
-        p[0] = Node('bin_op', [], [p[1]])
+        p[0] = Node('bin_op', [], [1], p[1:])
 
 
 def p_builtin_bin_op(p):
@@ -399,27 +465,27 @@ def p_builtin_bin_op(p):
                       | PP
                       | builtin_num_bin_op"""
     if type(p[1]) is str:
-        p[0] = Node('builtin_bin_op', [p[1]], [])
+        p[0] = Node('builtin_bin_op', [1], [], p[1:])
     else:
-        p[0] = Node('builtin_bin_op', [], [p[1]])
+        p[0] = Node('builtin_bin_op', [], [1], p[1:])
 
 
 def p_builtin_un_op(p):
     """builtin_un_op : NOT
                      | builtin_num_un_op"""
     if p[1] == 'not':
-        p[0] = Node('builtin_un_op', [p[1]], [])
+        p[0] = Node('builtin_un_op', [1], [], p[1:])
     else:
-        p[0] = Node('builtin_un_op', [], [p[1]])
+        p[0] = Node('builtin_un_op', [], [1], p[1:])
 
 
 def p_num_bin_op(p):
     """num_bin_op : builtin_num_bin_op
                   | QUOT IDENT QUOT"""
     if len(p) == 2:
-        p[0] = Node('num_bin_op', [], [p[1]])
+        p[0] = Node('num_bin_op', [], [1], p[1:])
     else:
-        p[0] = Node('num_bin_op', [p[1], p[2], p[3]], [])
+        p[0] = Node('num_bin_op', [1, 2, 3], [], p[1:])
 
 
 def p_builtin_num_bin_op(p):
@@ -429,44 +495,44 @@ def p_builtin_num_bin_op(p):
                           | '/'
                           | DIV
                           | MOD"""
-    p[0] = Node('builtin_num_bin_op', [p[1]], [])
+    p[0] = Node('builtin_num_bin_op', [1], [], p[1:])
 
 
 def p_builtin_num_un_op(p):
     """builtin_num_un_op : '+'
                          | '-'"""
-    p[0] = Node('builtin_num_un_op', [p[1]], [])
+    p[0] = Node('builtin_num_un_op', [1], [], p[1:])
 
 
 def p_bool_literal(p):
     """bool_literal : FALSE
                     | TRUE"""
-    p[0] = Node('bool_literal', [p[1]], [])
+    p[0] = Node('bool_literal', [1], [], p[1:])
 
 
 def p_int_literal(p):
     """int_literal : INTLIT"""
-    p[0] = Node('int_literal', [p[1]], [])
+    p[0] = Node('int_literal', [1], [], p[1:])
 
 
 def p_float_literal(p):
     """float_literal : FLOATLIT"""
-    p[0] = Node('float_literal', [p[1]], [])
+    p[0] = Node('float_literal', [1], [], p[1:])
 
 
 def p_string_literal(p):
     """string_literal : STRLIT"""
-    p[0] = Node('string_literal', [p[1]], [])
+    p[0] = Node('string_literal', [1], [], p[1:])
 
 
 def p_set_literal(p):
     """set_literal : '{' expr_star '}'"""
-    p[0] = Node('set_literal', [p[1], p[3]], [p[2]])
+    p[0] = Node('set_literal', [1, 3], [2], p[1:])
 
 
 def p_set_comp(p):
     """set_comp : '{' expr '|' comp_tail '}'"""
-    p[0] = Node('set_comp', [p[1], p[3], p[5]], [p[2], p[4]])
+    p[0] = Node('set_comp', [1, 3, 5], [2, 4], p[1:])
 
 
 def p_comp_tail(p):
@@ -475,13 +541,13 @@ def p_comp_tail(p):
        generator_star : epsilon
                       | ',' generator generator_star"""
     if len(p) == 2:
-        p[0] = Node('generator_star', [], [p[1]])
+        p[0] = Node('generator_star', [], [1], p[1:])
     elif len(p) == 3:
-        p[0] = Node('comp_tail', [], [p[1], p[2]])
+        p[0] = Node('comp_tail', [], [1, 2], p[1:])
     elif len(p) == 4:
-        p[0] = Node('generator_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('generator_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('comp_tail', [p[3]], [p[1], p[2], p[4]])
+        p[0] = Node('comp_tail', [3], [1, 2, 4], p[1:])
 
 
 def p_generator(p):
@@ -489,16 +555,16 @@ def p_generator(p):
        ident_star : epsilon
                   | ',' IDENT ident_star"""
     if len(p) == 2:
-        p[0] = Node('ident_star', [], [p[1]])
+        p[0] = Node('ident_star', [], [1], p[1:])
     elif len(p) == 4:
-        p[0] = Node('ident_star', [p[1], p[2]], [p[3]])
+        p[0] = Node('ident_star', [1, 2], [3], p[1:])
     else:
-        p[0] = Node('generator', [p[1], p[3]], [p[2], p[4]])
+        p[0] = Node('generator', [1, 3], [2, 4], p[1:])
 
 
 def p_simple_array_literal(p):
     """simple_array_literal : '[' expr_star ']'"""
-    p[0] = Node('simple_array_literal', [p[1], p[3]], [p[2]])
+    p[0] = Node('simple_array_literal', [1, 3], [2], p[1:])
 
 
 def p_simple_array_literal_2d(p):
@@ -506,25 +572,25 @@ def p_simple_array_literal_2d(p):
        array_gen               : epsilon
                                | expr expr_star array_2d_gen"""
     if len(p) == 2:
-        p[0] = Node('array_gen', [], [p[1]])
+        p[0] = Node('array_gen', [], [1], p[1:])
     elif len(p) == 4:
-        p[0] = Node('array_gen', [], [p[1], p[2], p[3]])
+        p[0] = Node('array_gen', [], [1, 2, 3], p[1:])
     else:
-        p[0] = Node('simple_array_literal_2d', [p[1], p[2], p[4], p[5]], [p[3]])
+        p[0] = Node('simple_array_literal_2d', [1, 2, 4, 5], [3], p[1:])
 
 
 def p_array_2d_gen(p):
     """array_2d_gen : epsilon
                     | '|' array_gen array_2d_gen"""
     if len(p) == 2:
-        p[0] = Node('array_2d_gen', [], [p[1]])
+        p[0] = Node('array_2d_gen', [], [1], p[1:])
     else:
-        p[0] = Node('array_2d_gen', [p[1]], [p[2], p[3]])
+        p[0] = Node('array_2d_gen', [1], [2, 3], p[1:])
 
 
 def p_simple_array_comp(p):
     """simple_array_comp : '[' expr '|' comp_tail ']'"""
-    p[0] = Node('simple_array_comp', [p[1], p[3], p[5]], [p[2], p[4]])
+    p[0] = Node('simple_array_comp', [1, 3, 5], [2, 4], p[1:])
 
 
 def p_indexed_array_literal(p):
@@ -533,53 +599,53 @@ def p_indexed_array_literal(p):
        index_expr_star       : epsilon
                              | ',' index_expr index_expr_star"""
     if len(p) == 2:
-        p[0] = Node('index_expr_star', [], [p[1]])
+        p[0] = Node('index_expr_star', [], [1], p[1:])
     elif len(p) == 3:
-        p[0] = Node('indexed_array_literal', [p[1], p[2]], [])
+        p[0] = Node('indexed_array_literal', [1, 2], [], p[1:])
     elif len(p) == 4:
-        p[0] = Node('index_expr_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('index_expr_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('indexed_array_literal', [p[1], p[4]], [p[2], p[3]])
+        p[0] = Node('indexed_array_literal', [1, 4], [2, 3], p[1:])
 
 
 def p_index_expr(p):
     """index_expr : expr ':' expr"""
-    p[0] = Node('index_expr', [p[2]], [p[1], p[3]])
+    p[0] = Node('index_expr', [2], [1, 3], p[1:])
 
 
 def p_indexed_array_comp(p):
     """indexed_array_comp : '[' index_expr '|' comp_tail ']'"""
-    p[0] = Node('indexed_array_comp', [p[1], p[3], p[5]], [p[2], p[4]])
+    p[0] = Node('indexed_array_comp', [1, 3, 5], [2, 4], p[1:])
 
 
 def p_array_access_tail(p):
     """array_access_tail : '[' expr expr_star ']'"""
-    p[0] = Node('array_access_tail', [p[1], p[4]], [p[2], p[3]])
+    p[0] = Node('array_access_tail', [1, 4], [2, 3], p[1:])
 
 
 def p_tuple_literal(p):
     """tuple_literal : '(' expr expr_star ')'"""
-    p[0] = Node('tuple_literal', [p[1], p[4]], [p[2], p[3]])
+    p[0] = Node('tuple_literal', [1, 4], [2, 3], p[1:])
 
 
 def p_tuple_access_tail(p):
     """tuple_access_tail : '.' int_literal"""
-    p[0] = Node('tuple_access_tail', [p[1]], [p[2]])
+    p[0] = Node('tuple_access_tail', [1], [2], p[1:])
 
 
 def p_record_literal(p):
     """record_literal  : '(' named_expr named_expr_star ')'"""
-    p[0] = Node('record_literal', [p[1], p[4]], [p[2], p[3]])
+    p[0] = Node('record_literal', [1, 4], [2, 3], p[1:])
 
 
 def p_named_expr(p):
     """named_expr : IDENT ':' expr"""
-    p[0] = Node('named_expr', [p[1], p[2]], [p[3]])
+    p[0] = Node('named_expr', [1, 2], [3], p[1:])
 
 
 def p_record_access_tail(p):
     """record_access_tail : '.' IDENT"""
-    p[0] = Node('record_access_tail', [p[1], p[2]], [])
+    p[0] = Node('record_access_tail', [1, 2], [], p[1:])
 
 
 
@@ -588,18 +654,18 @@ def p_enum_literal(p):
                        | IDENT '(' expr expr_star ')'
                        | IDENT"""
     if len(p) == 6:
-        p[0] = Node('enum_literal', [p[1], p[2], p[5]], [p[3], p[4]])
+        p[0] = Node('enum_literal', [1, 2, 5], [3, 4], p[1:])
     else:
-        p[0] = Node('enum_literal', [p[1]], [])
+        p[0] = Node('enum_literal', [1], [], p[1:])
 
 
 def p_ann_literal(p):
     """ann_literal : IDENT
                    | IDENT '(' expr expr_star ')'"""
     if len(p) == 6:
-        p[0] = Node('ann_literal', [p[1], p[2], p[5]], [p[3], p[4]])
+        p[0] = Node('ann_literal', [1, 2, 5], [3, 4], p[1:])
     else:
-        p[0] = Node('ann_literal', [p[1]], [])
+        p[0] = Node('ann_literal', [1], [], p[1:])
 
 
 def p_if_then_else_expr(p):
@@ -607,11 +673,11 @@ def p_if_then_else_expr(p):
        elseif_star       : epsilon
                          | ELSEIF expr THEN expr elseif_star"""
     if len(p) == 2:
-        p[0] = Node('elseif_star', [], [p[1]])
+        p[0] = Node('elseif_star', [], [1], p[1:])
     elif len(p) == 6:
-        p[0] = Node('elseif_star', [p[1], p[3]], [p[2], p[4], p[5]])
+        p[0] = Node('elseif_star', [1, 3], [2, 4, 5], p[1:])
     else:
-        p[0] = Node('if_then_else_expr', [p[1], p[3], p[6], p[8]], [p[2], p[4], p[5], p[7]])
+        p[0] = Node('if_then_else_expr', [1, 3, 6, 8], [2, 4, 5, 7], p[1:])
 
 
 def p_case_expr(p):
@@ -619,25 +685,25 @@ def p_case_expr(p):
        case_expr_case_star : epsilon
                            | ',' case_expr_case case_expr_case_star"""
     if len(p) == 2:
-        p[0] = Node('case_expr_case_star', [], [p[1]])
+        p[0] = Node('case_expr_case_star', [], [1], p[1:])
     elif len(p) == 4:
-        p[0] = Node('case_expr_case_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('case_expr_case_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('case_expr', [p[3], p[6]], [p[1], p[2], p[4], p[5]])
+        p[0] = Node('case_expr', [3, 6], [1, 2, 4, 5], p[1:])
 
 
 def p_case_expr_case(p):
     """case_expr_case : IDENT RARROW expr"""
-    p[0] = Node('case_expr_case', [p[1], p[2]], [p[3]])
+    p[0] = Node('case_expr_case', [1, 2], [3], p[1:])
 
 
 def p_call_expr(p):
     """call_expr : ident_or_quoted_op
                  | ident_or_quoted_op '(' expr expr_star ')'"""
     if len(p) == 2:
-        p[0] = Node('call_expr', [], [p[1]])
+        p[0] = Node('call_expr', [], [1], p[1:])
     else:
-        p[0] = Node('call_expr', [p[2], p[4]], [p[1], p[3]])
+        p[0] = Node('call_expr', [2, 4], [1, 3], p[1:])
 
 
 def p_let_expr(p):
@@ -645,30 +711,30 @@ def p_let_expr(p):
        var_decl_item_star : epsilon
                           | ',' var_decl_item var_decl_item_star"""
     if len(p) == 2:
-        p[0] = Node('var_decl_item_star', [], [p[1]])
+        p[0] = Node('var_decl_item_star', [], [1], p[1:])
     elif len(p) == 4:
-        p[0] = Node('var_decl_item_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('var_decl_item_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('let_expr', [p[1], p[2], p[5], p[6]], [p[3], p[4], p[7]])
+        p[0] = Node('let_expr', [1, 2, 5, 6], [3, 4, 7], p[1:])
 
 
 def p_gen_call_expr(p):
     """gen_call_expr : ident_or_quoted_op '(' comp_tail ')' '(' expr ')'"""
-    p[0] = Node('gen_call_expr', [p[2], p[4], p[5], p[7]], [p[1], p[3], p[6]])
+    p[0] = Node('gen_call_expr', [2, 4, 5, 7], [1, 3, 6], p[1:])
 
 
 def p_annotations(p):
     """annotations : epsilon
                    | DOUBLECOL annotation annotations"""
     if len(p) == 2:
-        p[0] = Node('annotations', [], [p[1]])
+        p[0] = Node('annotations', [], [1], p[1:])
     else:
-        p[0] = Node('annotations', [p[1]], [p[2], p[3]])
+        p[0] = Node('annotations', [1], [2, 3], p[1:])
 
 
 def p_annotation(p):
     """annotation : expr_atom_head expr_atom_tail"""
-    p[0] = Node('annotation', [], [p[1], p[2]])
+    p[0] = Node('annotation', [], [1, 2], p[1:])
 
 
 ## MISCELLANEOUS ELEMENTS ##
@@ -677,50 +743,50 @@ def p_ident_or_quoted_op(p):
     """ident_or_quoted_op : IDENT
                           | QUOT builtin_op QUOT"""
     if len(p) == 2:
-        p[0] = Node('ident_or_quoted_op', [p[1]], [])
+        p[0] = Node('ident_or_quoted_op', [1], [], p[1:])
     else:
-        p[0] = Node('ident_or_quoted_op', [p[1], p[3]], [p[2]])
+        p[0] = Node('ident_or_quoted_op', [1, 3], [2], p[1:])
 
 
 def p_epsilon(p):
     """epsilon :"""
-    p[0] = Node('epsilon', [], [])
+    p[0] = Node('epsilon', [], [], p[1:])
 
 
 def p_ti_expr_and_id_star(p):
     """ti_expr_and_id_star : epsilon
                            | ',' ti_expr_and_id ti_expr_and_id_star"""
     if len(p) == 4:
-        p[0] = Node('ti_expr_and_id_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('ti_expr_and_id_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('ti_expr_and_id_star', [], [p[1]])
+        p[0] = Node('ti_expr_and_id_star', [], [1], p[1:])
 
 
 def p_expr_star(p):
     """expr_star : epsilon
                  | ',' expr expr_star"""
     if len(p) == 4:
-        p[0] = Node('expr_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('expr_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('expr_star', [], [p[1]])
+        p[0] = Node('expr_star', [], [1], p[1:])
 
 
 def p_named_expr_star(p):
     """named_expr_star : epsilon
                        | ',' named_expr named_expr_star"""
     if len(p) == 2:
-        p[0] = Node('named_expr_star', [], [p[1]])
+        p[0] = Node('named_expr_star', [], [1], p[1:])
     else:
-        p[0] = Node('named_expr_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('named_expr_star', [1], [2, 3], p[1:])
 
 
 def p_ti_expr_star(p):
     """ti_expr_star : epsilon
                     | ',' ti_expr ti_expr_star"""
     if len(p) == 4:
-        p[0] = Node('ti_expr_star', [p[1]], [p[2], p[3]])
+        p[0] = Node('ti_expr_star', [1], [2, 3], p[1:])
     else:
-        p[0] = Node('ti_expr_star', [], [p[1]])
+        p[0] = Node('ti_expr_star', [], [1], p[1:])
 
 
 ## Error rules for syntax errors ##
@@ -1288,27 +1354,66 @@ def p_error(p):
 
 
 
-## Build the parser
-parser = yacc.yacc()
+# ## Build the parser
+# parser = yacc.yacc()
 
-filename = sys.argv[1]
-
-f = open(filename, 'r')
-s = ''
-for line in f:
-    s += line
-f.close()
-
-root = parser.parse(s)
-print root
+# filename1, filename2 = sys.argv[1], sys.argv[2]
 
 
-# while True:
-#     try:
-#         s = raw_input('calc > ')
-#     except EOFError:
-#         break
-#     if not s:
-#         continue
-#     result = parser.parse(s)
-#     print result
+# def load_file(filename):
+#     f = open(filename, 'r')
+#     s = ''
+#     for line in f:
+#         s += line
+#     f.close()
+#     return parser.parse(s)
+
+
+# root1 = load_file(filename1)
+# root2 = load_file(filename2)
+
+# # print root
+# tree_vector1 = root1.create_tree_vector()
+# tree_vector2 = root2.create_tree_vector()
+
+# lcs_vector = lcs_tree_vector(tree_vector1, tree_vector2,
+#                              len(tree_vector1), len(tree_vector2))
+
+# for n in lcs_vector:
+#     print n
+
+# for n in reversed(lcs_vector):
+#     print n[0].dump_subtree_terminals(n[1])[0]
+
+
+# # print tree1
+# # print '=========================================='
+# # print tree2
+# # print '------------------------------------------'
+
+# # print lcs_print(tree1, tree2, len(tree1), len(tree2))
+
+
+
+# # while True:
+# #     try:
+# #         s = raw_input('calc > ')
+# #     except EOFError:
+# #         break
+# #     if not s:
+# #         continue
+# #     result = parser.parse(s)
+# #     print result
+
+def compute_snippet_elements(s1, s2):
+    snippet_elems = []
+    parser = yacc.yacc()
+    root1 = parser.parse(s1)
+    root2 = parser.parse(s2)
+    tree_vector1 = root1.create_tree_vector()
+    tree_vector2 = root2.create_tree_vector()
+    lcs_vector = lcs_tree_vector(tree_vector1, tree_vector2,
+                                 len(tree_vector1), len(tree_vector2))
+    for n in reversed(lcs_vector):
+        snippet_elems.append(n[0].dump_subtree_terminals(n[1])[0])
+    return snippet_elems

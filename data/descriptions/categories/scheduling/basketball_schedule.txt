@@ -1,1 +1,0 @@
-The problem is finding a timetable for the Atlantic Coast Conference in basketball. The 9 basketball teams in the tournament are Clemson, Duke , Florida State, Georgia, Maryland , North Carolina , North Carolina State , Virginia, and Wake Forest. The problem is to determine a double round robin schedule for these 9 teams subject to some additional constraints.

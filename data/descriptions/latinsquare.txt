@@ -1,0 +1,1 @@
+The latin square puzzle is the problem of placing each digit one through n in n locations in a board so that no two instances of the same digit are in the same row or column

@@ -1,1 +1,0 @@
-The problem is to schedule m groups of n golfers over p weeks, such that no golfer plays in the same group as any other golfer twice.

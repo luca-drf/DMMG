@@ -1,1 +1,0 @@
-A group S of m agents A set T of n meetings. Each meeting is associated with a set of agents in S, that attend it. Consequently, each agent has a set of meetings that it must attend. Each meeting is associated with a location.

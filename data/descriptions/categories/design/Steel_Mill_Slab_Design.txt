@@ -1,2 +1,0 @@
-Steel is produced by casting molten iron into slabs. A steel mill can produce a
-finite number, of slab sizes. An order has two properties, a color corresponding to the route required through the steel mill and a weight. Given d input orders, the problem is to assign the orders to slabs, the number and size of which are also to be determined, such that the total weight of steel produced is minimized.

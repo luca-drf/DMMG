@@ -1,1 +1,0 @@
-The problem is to find an arrangement of v distinct objects into b blocks such that each block contains exactly k distinct objects, each object occurs in exactly r different blocks, and every two distinct objects occur together in exactly z blocks. 

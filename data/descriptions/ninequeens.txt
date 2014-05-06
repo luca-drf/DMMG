@@ -1,0 +1,1 @@
+The nine queens puzzle is the problem of placing nine queens and one pawn on a chessboard in such a way that queens don't attack each other

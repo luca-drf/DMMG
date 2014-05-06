@@ -1,3 +1,10 @@
 SERVER = '127.0.0.1'
 PORT = 55443
 AUTH = '2dccd769eca5696d7daf745b4ffb55afe08c41bc'
+
+SIM_FILE = 0.5
+CLUSTER_MAX_SIZE = 3
+
+MODELS_DIR = 'data/models'
+
+DEFAULT_DELTA = 0.9

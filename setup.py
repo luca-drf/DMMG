@@ -16,7 +16,7 @@ setup(
     license = "Apache License v2",
     keywords = "",
     url = "https://github.com/radome/DMMG",
-    packages = ['dmmg', 'dmmg/tests'],
+    packages = ['dmmg'],
     install_requires=[
         'nltk',
         'numpy',

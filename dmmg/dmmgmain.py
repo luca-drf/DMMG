@@ -11,6 +11,7 @@ import os
 from nltk import download
 from nltk.downloader import Downloader
 from sets import Set
+import settings
 
 
 def nltk_updater():
@@ -49,6 +50,10 @@ def import_file(filepath):
     return pos_tag(tokens)
 
 
+def retrieve_model_file(test_filepath):
+    return os.path.join(settings.MODELS_DIR, os.path.basename(test_filepath))
+
+
 def create_corpus(tagged):
     """ Take a list of tagged words and return a corpus as a list of tagged
     words with universal tagging and filtering all non-word entries """
@@ -83,7 +88,7 @@ def print_stats(order_vector_1, order_vector_2, wos_measure,
     print 'Computed in %s sec.' % (time[1] - time[0])
 
 
-def dmmg(delta, file1, file2):
+def similarity(delta, file1, file2):
     tw_start = time()
     p = Pool(2)
 
@@ -120,10 +125,10 @@ def dmmg(delta, file1, file2):
 
     semantic_vectors = [p.apply_async(sv.generate, (c, joint_word_set, fdist))
                         for c in corpus]
-
     sem_measure = sv.sem_similarity(semantic_vectors[0].get(),
                                     semantic_vectors[1].get())
-
+    p.close()
+    p.join()
     overall_similarity = delta * sem_measure + (1 - delta) * wos_measure
 
     tw_stop = time()
@@ -132,3 +137,42 @@ def dmmg(delta, file1, file2):
                 sem_measure, overall_similarity, (tw_start, tw_stop))
 
     return overall_similarity, sem_measure, wos_measure
+
+
+class Storage:
+    def __init__(self, similarity):
+        self.similarity = similarity
+        self.elements = []
+
+    def __str__(self):
+        return self.elements.__str__() + 'sim: ' + str(self.similarity)
+
+    def __repr__(self):
+        return self.elements.__str__() + 'sim: ' + str(self.similarity)
+
+    def store(self, tup):
+        if tup[0] >= self.similarity:
+            self.elements.append(tup)
+
+    # # The following code is in case we want to track a fixed number of files
+    # def store(self, tup):
+    #     """Binary search and insert"""
+    #     if tup[0] >= self.similarity:
+    #         l = 0
+    #         r = len(self.elements) - 1
+    #         indx = 0
+    #         # Store the insertion point in indx
+    #         while l <= r:
+    #             mid = l + (r - l) / 2
+    #             if self.elements[mid] == tup:
+    #                 indx = mid + 1
+    #                 break
+    #             elif self.elements[mid] > tup:
+    #                 if l == r:
+    #                     indx = mid + 1
+    #                 l = mid + 1
+    #             else:
+    #                 if l == r:
+    #                     indx = mid - 1
+    #                 r = mid - 1
+    #         self.elements.insert(indx, tup)

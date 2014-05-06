@@ -1,1 +1,0 @@
-A Golomb ruler is a set of marks at integer positions along an imaginary ruler such that no two pairs of marks are the same distance apart. The objective is to find optimal (minimum length) or near optimal rulers.  

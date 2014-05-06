@@ -19,7 +19,7 @@ Usage
 ----------------------------
 ::
 
-    % python dmmg [-h] [-c | -s] <delta> <query> <rootpath>
+    % python dmmg [-h] [-c | -s] [-d delta] <query> <rootpath>
 
 Contributors
 ------------

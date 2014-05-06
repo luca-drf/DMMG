@@ -1,4 +1,0 @@
-This problem is to put a queen and the square of N numbers on a n x n chessboard so that no two numbers are on the
-same cell, any number I+1 is reachable by a knight move from the cell containing I, and the number of primes not attacked by the
-queen is minimal. 
-

@@ -1,1 +1,0 @@
-Find an arrangement of numbers in a square grid, where the numbers in each row, and in each column, and the numbers in the forward and backward main diagonals, all add up to the same number.

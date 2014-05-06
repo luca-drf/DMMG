@@ -1,1 +1,0 @@
-The problem is to design a balanced academic curriculum by assigning periods to courses in a way that the academic load of each period is as similar as possible. 

@@ -1,1 +1,0 @@
-Peg solitaire is a board game for one player involving movement of pegs on a board with holes.

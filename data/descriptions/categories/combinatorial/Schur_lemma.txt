@@ -1,1 +1,0 @@
-The problem is to put n numbers into k boxes so that no box contains three numbers such that the sum of the first two elements equals the third element.

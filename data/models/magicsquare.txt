@@ -1,0 +1,19 @@
+int: n = 3;
+
+int: total = ( n * (n*n + 1)) div 2;
+array[1..n,1..n] of var 1..n*n: magic;
+
+constraint
+
+        all_different([magic[i,j] | i in 1..n, j in 1..n]) :: domain
+        /\
+        forall(k in 1..n) (
+           sum(i in 1..n) (magic[k,i]) = total
+           /\
+           sum(i in 1..n) (magic[i,k]) = total 
+        )
+       /\
+       sum(i in 1..n) (magic[i,i]) = total
+       /\
+       sum(i in 1..n) (magic[i,n-i+1]) = total
+;

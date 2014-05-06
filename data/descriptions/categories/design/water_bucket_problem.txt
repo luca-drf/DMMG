@@ -1,2 +1,0 @@
-You are given an 8 pint bucket of water, and two empty buckets which can contain 5 and 3 pints respectively. You
-are required to divide the water into two by pouring water between buckets.
