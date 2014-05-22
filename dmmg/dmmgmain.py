@@ -15,6 +15,8 @@ import settings
 
 
 def nltk_updater():
+    """Install or updates needed nltk internal packages.
+    """
     packages = Set(['brown',
                     'wordnet',
                     'wordnet_ic',
@@ -31,6 +33,8 @@ def nltk_updater():
 
 
 def filepath_gen(path):
+    """Yield all the filepaths contained in 'path' excluding hidden files.
+    """
     if os.path.isfile(path):
         yield path
     else:
@@ -51,6 +55,9 @@ def import_file(filepath):
 
 
 def retrieve_model_file(test_filepath):
+    """Return the filepath of the file containing the model of the
+    corresponding description contained in 'test_filepath'.
+    """
     return os.path.join(settings.MODELS_DIR, os.path.basename(test_filepath))
 
 
@@ -71,6 +78,8 @@ def create_corpus(tagged):
 def print_stats(order_vector_1, order_vector_2, wos_measure,
                 semantic_vector_1, semantic_vector_2, sem_measure,
                 overall_similarity, time):
+    """Print similarity statistics.
+    """
 
     # print '== Order Vectors =='
     # print order_vector_1
@@ -89,6 +98,9 @@ def print_stats(order_vector_1, order_vector_2, wos_measure,
 
 
 def similarity(delta, file1, file2):
+    """Return the overall similarity, semantic similarity and word order
+    similarity between 'file1' and 'file2' with the given 'delta'.
+    """
     tw_start = time()
     p = Pool(2)
 
@@ -151,6 +163,9 @@ class Storage:
         return self.elements.__str__() + 'sim: ' + str(self.similarity)
 
     def store(self, tup):
+        """Stores tuples whose similarity is greater or equal a certain
+        treshold set in Storage.similarity.
+        """
         if tup[0] >= self.similarity:
             self.elements.append(tup)
 

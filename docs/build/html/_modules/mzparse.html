@@ -1,0 +1,1513 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mzparse &mdash; DMMG 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DMMG 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for mzparse</h1><div class="highlight"><pre>
+<span class="c"># import sys</span>
+<span class="kn">import</span> <span class="nn">ply.yacc</span> <span class="kn">as</span> <span class="nn">yacc</span>
+<span class="c"># Get the token map from the lexer.  This is required.</span>
+<span class="kn">from</span> <span class="nn">mzlex</span> <span class="kn">import</span> <span class="n">tokens</span>
+
+<span class="kn">from</span> <span class="nn">distances</span> <span class="kn">import</span> <span class="n">lcs_vector</span><span class="p">,</span> <span class="n">lcs_print</span>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../dmmg.html#mzparse.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">leafs</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">prod</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">typ</span> <span class="o">=</span> <span class="n">typ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span> <span class="o">=</span> <span class="n">leafs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prod</span> <span class="o">=</span> <span class="n">prod</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ch_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">leaf_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span><span class="p">:</span>
+            <span class="n">leaf_string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">leaf</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">ch_string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">child</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">typ</span>
+        <span class="k">return</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">typ</span><span class="p">,</span> <span class="n">leaf_string</span><span class="p">,</span> <span class="n">ch_string</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Node.dump_tree"><a class="viewcode-back" href="../dmmg.html#mzparse.Node.dump_tree">[docs]</a>    <span class="k">def</span> <span class="nf">dump_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ch_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">leaf_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span><span class="p">:</span>
+            <span class="n">leaf_string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">leaf</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">ch_string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">child</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dump_tree</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">typ</span><span class="p">,</span> <span class="n">leaf_string</span><span class="p">,</span> <span class="n">ch_string</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">typ</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">prod</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span> <span class="ow">and</span>
+                        <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                            <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Node.dump_tree_terminals"><a class="viewcode-back" href="../dmmg.html#mzparse.Node.dump_tree_terminals">[docs]</a>    <span class="k">def</span> <span class="nf">dump_tree_terminals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string containing the terminals producted by the grammar</span>
+<span class="sd">        that has generated this tree.&quot;&quot;&quot;</span>
+        <span class="n">ch_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">ch_string</span> <span class="o">+=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ch_string</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">dump_tree_terminals</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ch_string</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Node.dump_subtree_terminals"><a class="viewcode-back" href="../dmmg.html#mzparse.Node.dump_subtree_terminals">[docs]</a>    <span class="k">def</span> <span class="nf">dump_subtree_terminals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lev</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string containing the terminals producted by the grammar</span>
+<span class="sd">        that has generated this tree. The lev parameter specify when to stop&quot;&quot;&quot;</span>
+        <span class="n">ch_string</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">lev</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">ch_string</span> <span class="o">+=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lev</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ch_string</span> <span class="o">+=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">typ</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">temp_ch_string</span><span class="p">,</span> <span class="n">lev</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">dump_subtree_terminals</span><span class="p">(</span><span class="n">lev</span><span class="p">)</span>
+                    <span class="n">ch_string</span> <span class="o">+=</span> <span class="n">temp_ch_string</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ch_string</span><span class="p">,</span> <span class="n">lev</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Node.create_tree_vector"><a class="viewcode-back" href="../dmmg.html#mzparse.Node.create_tree_vector">[docs]</a>    <span class="k">def</span> <span class="nf">create_tree_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a vector containing nodes in a dfs order&quot;&quot;&quot;</span>
+        <span class="n">tree_vector</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">tree_vector</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prod</span><span class="p">[</span><span class="n">child</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">create_tree_vector</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">tree_vector</span>
+
+
+<span class="c">## ITEMS ##</span>
+</div></div>
+<div class="viewcode-block" id="p_model"><a class="viewcode-back" href="../dmmg.html#mzparse.p_model">[docs]</a><span class="k">def</span> <span class="nf">p_model</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;model : epsilon</span>
+<span class="sd">             | item &#39;;&#39; model&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_item">[docs]</a><span class="k">def</span> <span class="nf">p_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;item : type_inst_syn_item</span>
+<span class="sd">            | enum_item</span>
+<span class="sd">            | include_item</span>
+<span class="sd">            | var_decl_item</span>
+<span class="sd">            | assign_item</span>
+<span class="sd">            | constraint_item</span>
+<span class="sd">            | solve_item</span>
+<span class="sd">            | output_item</span>
+<span class="sd">            | predicate_item</span>
+<span class="sd">            | test_item</span>
+<span class="sd">            | function_item</span>
+<span class="sd">            | annotation_item&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;item&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_type_inst_syn_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_type_inst_syn_item">[docs]</a><span class="k">def</span> <span class="nf">p_type_inst_syn_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;type_inst_syn_item : TYPE IDENT annotations &#39;=&#39; ti_expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;type_inst_syn_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_enum_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_enum_item">[docs]</a><span class="k">def</span> <span class="nf">p_enum_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enum_item : ENUM IDENT annotations</span>
+<span class="sd">                 | ENUM IDENT annotations &#39;=&#39; enum_cases&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_enum_cases"><a class="viewcode-back" href="../dmmg.html#mzparse.p_enum_cases">[docs]</a><span class="k">def</span> <span class="nf">p_enum_cases</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enum_cases     : &#39;{&#39; enum_case enum_case_star &#39;}&#39;</span>
+<span class="sd">       enum_case_star : epsilon</span>
+<span class="sd">                      | &#39;,&#39; enum_case enum_case_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_cases&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_case_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_case_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_enum_case"><a class="viewcode-back" href="../dmmg.html#mzparse.p_enum_case">[docs]</a><span class="k">def</span> <span class="nf">p_enum_case</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enum_case : IDENT</span>
+<span class="sd">                 | IDENT &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_case&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_case&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_ti_expr_and_id"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ti_expr_and_id">[docs]</a><span class="k">def</span> <span class="nf">p_ti_expr_and_id</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ti_expr_and_id : ti_expr &#39;:&#39; IDENT&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr_and_id&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_include_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_include_item">[docs]</a><span class="k">def</span> <span class="nf">p_include_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;include_item : INCLUDE string_literal&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;include_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_var_decl_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_var_decl_item">[docs]</a><span class="k">def</span> <span class="nf">p_var_decl_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;var_decl_item : ti_expr_and_id annotations</span>
+<span class="sd">                     | ti_expr_and_id annotations &#39;=&#39; expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_decl_item&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_decl_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_assign_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_assign_item">[docs]</a><span class="k">def</span> <span class="nf">p_assign_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;assign_item : IDENT &#39;=&#39; expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;assign_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_constraint_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_constraint_item">[docs]</a><span class="k">def</span> <span class="nf">p_constraint_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;constraint_item : CONSTRAINT expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;constraint_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_solve_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_solve_item">[docs]</a><span class="k">def</span> <span class="nf">p_solve_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;solve_item : SOLVE annotations SATISFY</span>
+<span class="sd">                  | SOLVE annotations MINIMIZE expr</span>
+<span class="sd">                  | SOLVE annotations MAXIMIZE expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;solve_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;solve_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_output_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_output_item">[docs]</a><span class="k">def</span> <span class="nf">p_output_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;output_item : OUTPUT expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;output_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_annotation_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_annotation_item">[docs]</a><span class="k">def</span> <span class="nf">p_annotation_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;annotation_item : ANNOTATION IDENT params&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;annotation_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_predicate_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_predicate_item">[docs]</a><span class="k">def</span> <span class="nf">p_predicate_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;predicate_item : PREDICATE operation_item_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;predicate_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_test_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_test_item">[docs]</a><span class="k">def</span> <span class="nf">p_test_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;test_item : TEST operation_item_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;test_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_function_item"><a class="viewcode-back" href="../dmmg.html#mzparse.p_function_item">[docs]</a><span class="k">def</span> <span class="nf">p_function_item</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;function_item : FUNCTION ti_expr &#39;:&#39; operation_item_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;function_item&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_operation_item_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_operation_item_tail">[docs]</a><span class="k">def</span> <span class="nf">p_operation_item_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;operation_item_tail : IDENT params annotations</span>
+<span class="sd">                           | IDENT params annotations &#39;=&#39; expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;operation_item_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;operation_item_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_params"><a class="viewcode-back" href="../dmmg.html#mzparse.p_params">[docs]</a><span class="k">def</span> <span class="nf">p_params</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;params : epsilon</span>
+<span class="sd">              | &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;params&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;params&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+<span class="c">## TYPE-INST-EXPRESSIONS ##</span>
+</div>
+<div class="viewcode-block" id="p_ti_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ti_expr">[docs]</a><span class="k">def</span> <span class="nf">p_ti_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ti_expr : &#39;(&#39; ti_expr &#39;:&#39; IDENT WHERE expr &#39;)&#39;</span>
+<span class="sd">               | base_ti_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_base_ti_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_base_ti_expr">[docs]</a><span class="k">def</span> <span class="nf">p_base_ti_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base_ti_expr : var_par base_ti_expr_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;base_ti_expr&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_var_par"><a class="viewcode-back" href="../dmmg.html#mzparse.p_var_par">[docs]</a><span class="k">def</span> <span class="nf">p_var_par</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;var_par : epsilon</span>
+<span class="sd">               | PAR</span>
+<span class="sd">               | VAR&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_par&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_par&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_base_ti_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_base_ti_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_base_ti_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base_ti_expr_tail : IDENT</span>
+<span class="sd">                         | BOOL</span>
+<span class="sd">                         | INT</span>
+<span class="sd">                         | FLOAT</span>
+<span class="sd">                         | STRING</span>
+<span class="sd">                         | set_ti_expr_tail</span>
+<span class="sd">                         | array_ti_expr_tail</span>
+<span class="sd">                         | tuple_ti_expr_tail</span>
+<span class="sd">                         | record_ti_expr_tail</span>
+<span class="sd">                         | ti_variable_expr_tail</span>
+<span class="sd">                         | ANN</span>
+<span class="sd">                         | op_ti_expr_tail</span>
+<span class="sd">                         | &#39;{&#39; expr expr_star &#39;}&#39;</span>
+<span class="sd">                         | num_expr DOTS num_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;base_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;base_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ident&#39;</span> <span class="ow">or</span>
+          <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;bool&#39;</span> <span class="ow">or</span>
+          <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;int&#39;</span> <span class="ow">or</span>
+          <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;float&#39;</span> <span class="ow">or</span>
+          <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;string&#39;</span> <span class="ow">or</span>
+          <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ann&#39;</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;base_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;base_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_set_ti_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_set_ti_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_set_ti_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;set_ti_expr_tail : SET OF ti_expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;set_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_array_ti_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_array_ti_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_array_ti_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;array_ti_expr_tail : ARRAY &#39;[&#39; ti_expr ti_expr_star &#39;]&#39; OF ti_expr</span>
+<span class="sd">                          | LIST OF ti_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_tuple_ti_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_tuple_ti_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_tuple_ti_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;tuple_ti_expr_tail : TUPLE &#39;(&#39; ti_expr ti_expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;tuple_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_record_ti_exprtail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_record_ti_exprtail">[docs]</a><span class="k">def</span> <span class="nf">p_record_ti_exprtail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;record_ti_expr_tail  : RECORD &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;record_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_ti_variable_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ti_variable_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_ti_variable_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ti_variable_expr_tail : IDENT</span>
+<span class="sd">                             | ANY IDENT&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_variable_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_variable_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_op_ti_expr_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_op_ti_expr_tail">[docs]</a><span class="k">def</span> <span class="nf">p_op_ti_expr_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;op_ti_expr_tail : OP &#39;(&#39; ti_expr &#39;:&#39; &#39;(&#39; ti_expr ti_expr_star &#39;)&#39; &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;op_ti_expr_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+<span class="c">## EXPRESSIONS ##</span>
+</div>
+<div class="viewcode-block" id="p_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr">[docs]</a><span class="k">def</span> <span class="nf">p_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr : expr_atom expr_binop_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_expr_atom"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr_atom">[docs]</a><span class="k">def</span> <span class="nf">p_expr_atom</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr_atom : expr_atom_head expr_atom_tail annotations&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_expr_binop_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr_binop_tail">[docs]</a><span class="k">def</span> <span class="nf">p_expr_binop_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr_binop_tail : epsilon</span>
+<span class="sd">                       | bin_op expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_binop_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_binop_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_expr_atom_head"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr_atom_head">[docs]</a><span class="k">def</span> <span class="nf">p_expr_atom_head</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr_atom_head : builtin_un_op expr_atom</span>
+<span class="sd">                      | &#39;(&#39; expr &#39;)&#39;</span>
+<span class="sd">                      | ident_or_quoted_op</span>
+<span class="sd">                      | &#39;_&#39;</span>
+<span class="sd">                      | bool_literal</span>
+<span class="sd">                      | int_literal</span>
+<span class="sd">                      | float_literal</span>
+<span class="sd">                      | string_literal</span>
+<span class="sd">                      | set_literal</span>
+<span class="sd">                      | set_comp</span>
+<span class="sd">                      | simple_array_literal</span>
+<span class="sd">                      | simple_array_literal_2d</span>
+<span class="sd">                      | indexed_array_literal</span>
+<span class="sd">                      | simple_array_comp</span>
+<span class="sd">                      | indexed_array_comp</span>
+<span class="sd">                      | tuple_literal</span>
+<span class="sd">                      | record_literal</span>
+<span class="sd">                      | enum_literal</span>
+<span class="sd">                      | ann_literal</span>
+<span class="sd">                      | if_then_else_expr</span>
+<span class="sd">                      | case_expr</span>
+<span class="sd">                      | let_expr</span>
+<span class="sd">                      | call_expr</span>
+<span class="sd">                      | gen_call_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;_&#39;</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_expr_atom_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr_atom_tail">[docs]</a><span class="k">def</span> <span class="nf">p_expr_atom_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr_atom_tail : epsilon</span>
+<span class="sd">                      | array_access_tail expr_atom_tail</span>
+<span class="sd">                      | tuple_access_tail expr_atom_tail</span>
+<span class="sd">                      | record_access_tail expr_atom_tail&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_atom_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_num_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_num_expr">[docs]</a><span class="k">def</span> <span class="nf">p_num_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;num_expr : num_expr_atom num_expr_binop_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_num_expr_atom"><a class="viewcode-back" href="../dmmg.html#mzparse.p_num_expr_atom">[docs]</a><span class="k">def</span> <span class="nf">p_num_expr_atom</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;num_expr_atom : num_expr_atom_head expr_atom_tail annotations&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_atom&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_num_expr_binop_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_num_expr_binop_tail">[docs]</a><span class="k">def</span> <span class="nf">p_num_expr_binop_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;num_expr_binop_tail : epsilon</span>
+<span class="sd">                           | num_bin_op num_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_binop_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_binop_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_num_expr_atom_head"><a class="viewcode-back" href="../dmmg.html#mzparse.p_num_expr_atom_head">[docs]</a><span class="k">def</span> <span class="nf">p_num_expr_atom_head</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;num_expr_atom_head : builtin_num_un_op num_expr_atom</span>
+<span class="sd">                          | &#39;(&#39; num_expr &#39;)&#39;</span>
+<span class="sd">                          | ident_or_quoted_op</span>
+<span class="sd">                          | int_literal</span>
+<span class="sd">                          | float_literal</span>
+<span class="sd">                          | if_then_else_expr</span>
+<span class="sd">                          | case_expr</span>
+<span class="sd">                          | let_expr</span>
+<span class="sd">                          | call_expr</span>
+<span class="sd">                          | gen_call_expr&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_expr_atom_head&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_builtin_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_builtin_op">[docs]</a><span class="k">def</span> <span class="nf">p_builtin_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;builtin_op : builtin_bin_op</span>
+<span class="sd">                  | builtin_un_op&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_op&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_bin_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_bin_op">[docs]</a><span class="k">def</span> <span class="nf">p_bin_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;bin_op : builtin_bin_op</span>
+<span class="sd">              | QUOT IDENT QUOT&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;bin_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;bin_op&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_builtin_bin_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_builtin_bin_op">[docs]</a><span class="k">def</span> <span class="nf">p_builtin_bin_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;builtin_bin_op : IFF</span>
+<span class="sd">                      | SUF</span>
+<span class="sd">                      | NEC</span>
+<span class="sd">                      | DIS</span>
+<span class="sd">                      | XOR</span>
+<span class="sd">                      | CON</span>
+<span class="sd">                      | &#39;&lt;&#39;</span>
+<span class="sd">                      | &#39;&gt;&#39;</span>
+<span class="sd">                      | LEQ</span>
+<span class="sd">                      | GEQ</span>
+<span class="sd">                      | EQ</span>
+<span class="sd">                      | &#39;=&#39;</span>
+<span class="sd">                      | DIF</span>
+<span class="sd">                      | IN</span>
+<span class="sd">                      | SUBSET</span>
+<span class="sd">                      | SUPERSET</span>
+<span class="sd">                      | UNION</span>
+<span class="sd">                      | DIFF</span>
+<span class="sd">                      | SYMDIFF</span>
+<span class="sd">                      | DOTS</span>
+<span class="sd">                      | INTERSECT</span>
+<span class="sd">                      | PP</span>
+<span class="sd">                      | builtin_num_bin_op&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_bin_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_bin_op&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_builtin_un_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_builtin_un_op">[docs]</a><span class="k">def</span> <span class="nf">p_builtin_un_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;builtin_un_op : NOT</span>
+<span class="sd">                     | builtin_num_un_op&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;not&#39;</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_un_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_un_op&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_num_bin_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_num_bin_op">[docs]</a><span class="k">def</span> <span class="nf">p_num_bin_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;num_bin_op : builtin_num_bin_op</span>
+<span class="sd">                  | QUOT IDENT QUOT&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_bin_op&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;num_bin_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_builtin_num_bin_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_builtin_num_bin_op">[docs]</a><span class="k">def</span> <span class="nf">p_builtin_num_bin_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;builtin_num_bin_op : &#39;+&#39;</span>
+<span class="sd">                          | &#39;-&#39;</span>
+<span class="sd">                          | &#39;*&#39;</span>
+<span class="sd">                          | &#39;/&#39;</span>
+<span class="sd">                          | DIV</span>
+<span class="sd">                          | MOD&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_num_bin_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_builtin_num_un_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_builtin_num_un_op">[docs]</a><span class="k">def</span> <span class="nf">p_builtin_num_un_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;builtin_num_un_op : &#39;+&#39;</span>
+<span class="sd">                         | &#39;-&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;builtin_num_un_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_bool_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_bool_literal">[docs]</a><span class="k">def</span> <span class="nf">p_bool_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;bool_literal : FALSE</span>
+<span class="sd">                    | TRUE&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;bool_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_int_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_int_literal">[docs]</a><span class="k">def</span> <span class="nf">p_int_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;int_literal : INTLIT&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;int_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_float_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_float_literal">[docs]</a><span class="k">def</span> <span class="nf">p_float_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;float_literal : FLOATLIT&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;float_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_string_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_string_literal">[docs]</a><span class="k">def</span> <span class="nf">p_string_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;string_literal : STRLIT&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;string_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_set_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_set_literal">[docs]</a><span class="k">def</span> <span class="nf">p_set_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;set_literal : &#39;{&#39; expr_star &#39;}&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;set_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_set_comp"><a class="viewcode-back" href="../dmmg.html#mzparse.p_set_comp">[docs]</a><span class="k">def</span> <span class="nf">p_set_comp</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;set_comp : &#39;{&#39; expr &#39;|&#39; comp_tail &#39;}&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;set_comp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_comp_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_comp_tail">[docs]</a><span class="k">def</span> <span class="nf">p_comp_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;comp_tail      : generator generator_star</span>
+<span class="sd">                      | generator generator_star WHERE expr</span>
+<span class="sd">       generator_star : epsilon</span>
+<span class="sd">                      | &#39;,&#39; generator generator_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;generator_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;comp_tail&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;generator_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;comp_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_generator"><a class="viewcode-back" href="../dmmg.html#mzparse.p_generator">[docs]</a><span class="k">def</span> <span class="nf">p_generator</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;generator  : IDENT ident_star IN expr</span>
+<span class="sd">       ident_star : epsilon</span>
+<span class="sd">                  | &#39;,&#39; IDENT ident_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ident_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ident_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;generator&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_simple_array_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_simple_array_literal">[docs]</a><span class="k">def</span> <span class="nf">p_simple_array_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;simple_array_literal : &#39;[&#39; expr_star &#39;]&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;simple_array_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_simple_array_literal_2d"><a class="viewcode-back" href="../dmmg.html#mzparse.p_simple_array_literal_2d">[docs]</a><span class="k">def</span> <span class="nf">p_simple_array_literal_2d</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;simple_array_literal_2d : &#39;[&#39; &#39;|&#39; array_gen &#39;|&#39; &#39;]&#39;</span>
+<span class="sd">       array_gen               : epsilon</span>
+<span class="sd">                               | expr expr_star array_2d_gen&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_gen&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_gen&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;simple_array_literal_2d&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_array_2d_gen"><a class="viewcode-back" href="../dmmg.html#mzparse.p_array_2d_gen">[docs]</a><span class="k">def</span> <span class="nf">p_array_2d_gen</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;array_2d_gen : epsilon</span>
+<span class="sd">                    | &#39;|&#39; array_gen array_2d_gen&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_2d_gen&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_2d_gen&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_simple_array_comp"><a class="viewcode-back" href="../dmmg.html#mzparse.p_simple_array_comp">[docs]</a><span class="k">def</span> <span class="nf">p_simple_array_comp</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;simple_array_comp : &#39;[&#39; expr &#39;|&#39; comp_tail &#39;]&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;simple_array_comp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_indexed_array_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_indexed_array_literal">[docs]</a><span class="k">def</span> <span class="nf">p_indexed_array_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;indexed_array_literal : &#39;[&#39; &#39;]&#39;</span>
+<span class="sd">                             | &#39;[&#39; index_expr index_expr_star &#39;]&#39;</span>
+<span class="sd">       index_expr_star       : epsilon</span>
+<span class="sd">                             | &#39;,&#39; index_expr index_expr_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;index_expr_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;indexed_array_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;index_expr_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;indexed_array_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_index_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_index_expr">[docs]</a><span class="k">def</span> <span class="nf">p_index_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;index_expr : expr &#39;:&#39; expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;index_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_indexed_array_comp"><a class="viewcode-back" href="../dmmg.html#mzparse.p_indexed_array_comp">[docs]</a><span class="k">def</span> <span class="nf">p_indexed_array_comp</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;indexed_array_comp : &#39;[&#39; index_expr &#39;|&#39; comp_tail &#39;]&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;indexed_array_comp&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_array_access_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_array_access_tail">[docs]</a><span class="k">def</span> <span class="nf">p_array_access_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;array_access_tail : &#39;[&#39; expr expr_star &#39;]&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;array_access_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_tuple_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_tuple_literal">[docs]</a><span class="k">def</span> <span class="nf">p_tuple_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;tuple_literal : &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;tuple_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_tuple_access_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_tuple_access_tail">[docs]</a><span class="k">def</span> <span class="nf">p_tuple_access_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;tuple_access_tail : &#39;.&#39; int_literal&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;tuple_access_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_record_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_record_literal">[docs]</a><span class="k">def</span> <span class="nf">p_record_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;record_literal  : &#39;(&#39; named_expr named_expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;record_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_named_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_named_expr">[docs]</a><span class="k">def</span> <span class="nf">p_named_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;named_expr : IDENT &#39;:&#39; expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;named_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_record_access_tail"><a class="viewcode-back" href="../dmmg.html#mzparse.p_record_access_tail">[docs]</a><span class="k">def</span> <span class="nf">p_record_access_tail</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;record_access_tail : &#39;.&#39; IDENT&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;record_access_tail&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+</div>
+<div class="viewcode-block" id="p_enum_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_enum_literal">[docs]</a><span class="k">def</span> <span class="nf">p_enum_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enum_literal    : IDENT &#39;(&#39; named_expr named_expr_star &#39;)&#39;</span>
+<span class="sd">                       | IDENT &#39;(&#39; expr expr_star &#39;)&#39;</span>
+<span class="sd">                       | IDENT&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;enum_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_ann_literal"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ann_literal">[docs]</a><span class="k">def</span> <span class="nf">p_ann_literal</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ann_literal : IDENT</span>
+<span class="sd">                   | IDENT &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ann_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ann_literal&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_if_then_else_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_if_then_else_expr">[docs]</a><span class="k">def</span> <span class="nf">p_if_then_else_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;if_then_else_expr : IF expr THEN expr elseif_star ELSE expr ENDIF</span>
+<span class="sd">       elseif_star       : epsilon</span>
+<span class="sd">                         | ELSEIF expr THEN expr elseif_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;elseif_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;elseif_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;if_then_else_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_case_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_case_expr">[docs]</a><span class="k">def</span> <span class="nf">p_case_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;case_expr           : CASE expr &#39;{&#39; case_expr_case case_expr_case_star &#39;}&#39;</span>
+<span class="sd">       case_expr_case_star : epsilon</span>
+<span class="sd">                           | &#39;,&#39; case_expr_case case_expr_case_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;case_expr_case_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;case_expr_case_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;case_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_case_expr_case"><a class="viewcode-back" href="../dmmg.html#mzparse.p_case_expr_case">[docs]</a><span class="k">def</span> <span class="nf">p_case_expr_case</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;case_expr_case : IDENT RARROW expr&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;case_expr_case&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_call_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_call_expr">[docs]</a><span class="k">def</span> <span class="nf">p_call_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;call_expr : ident_or_quoted_op</span>
+<span class="sd">                 | ident_or_quoted_op &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;call_expr&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;call_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_let_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_let_expr">[docs]</a><span class="k">def</span> <span class="nf">p_let_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;let_expr           : LET &#39;{&#39; var_decl_item var_decl_item_star &#39;}&#39; IN expr</span>
+<span class="sd">       var_decl_item_star : epsilon</span>
+<span class="sd">                          | &#39;,&#39; var_decl_item var_decl_item_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_decl_item_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;var_decl_item_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;let_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_gen_call_expr"><a class="viewcode-back" href="../dmmg.html#mzparse.p_gen_call_expr">[docs]</a><span class="k">def</span> <span class="nf">p_gen_call_expr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;gen_call_expr : ident_or_quoted_op &#39;(&#39; comp_tail &#39;)&#39; &#39;(&#39; expr &#39;)&#39;&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;gen_call_expr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_annotations"><a class="viewcode-back" href="../dmmg.html#mzparse.p_annotations">[docs]</a><span class="k">def</span> <span class="nf">p_annotations</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;annotations : epsilon</span>
+<span class="sd">                   | DOUBLECOL annotation annotations&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;annotations&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;annotations&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_annotation"><a class="viewcode-back" href="../dmmg.html#mzparse.p_annotation">[docs]</a><span class="k">def</span> <span class="nf">p_annotation</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;annotation : expr_atom_head expr_atom_tail&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;annotation&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+<span class="c">## MISCELLANEOUS ELEMENTS ##</span>
+</div>
+<div class="viewcode-block" id="p_ident_or_quoted_op"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ident_or_quoted_op">[docs]</a><span class="k">def</span> <span class="nf">p_ident_or_quoted_op</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ident_or_quoted_op : IDENT</span>
+<span class="sd">                          | QUOT builtin_op QUOT&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ident_or_quoted_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ident_or_quoted_op&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_epsilon"><a class="viewcode-back" href="../dmmg.html#mzparse.p_epsilon">[docs]</a><span class="k">def</span> <span class="nf">p_epsilon</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;epsilon :&quot;&quot;&quot;</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;epsilon&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_ti_expr_and_id_star"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ti_expr_and_id_star">[docs]</a><span class="k">def</span> <span class="nf">p_ti_expr_and_id_star</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ti_expr_and_id_star : epsilon</span>
+<span class="sd">                           | &#39;,&#39; ti_expr_and_id ti_expr_and_id_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr_and_id_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr_and_id_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_expr_star"><a class="viewcode-back" href="../dmmg.html#mzparse.p_expr_star">[docs]</a><span class="k">def</span> <span class="nf">p_expr_star</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;expr_star : epsilon</span>
+<span class="sd">                 | &#39;,&#39; expr expr_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;expr_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_named_expr_star"><a class="viewcode-back" href="../dmmg.html#mzparse.p_named_expr_star">[docs]</a><span class="k">def</span> <span class="nf">p_named_expr_star</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;named_expr_star : epsilon</span>
+<span class="sd">                       | &#39;,&#39; named_expr named_expr_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;named_expr_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;named_expr_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<div class="viewcode-block" id="p_ti_expr_star"><a class="viewcode-back" href="../dmmg.html#mzparse.p_ti_expr_star">[docs]</a><span class="k">def</span> <span class="nf">p_ti_expr_star</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ti_expr_star : epsilon</span>
+<span class="sd">                    | &#39;,&#39; ti_expr ti_expr_star&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr_star&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s">&#39;ti_expr_star&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+<span class="c">## Error rules for syntax errors ##</span></div>
+<div class="viewcode-block" id="p_error"><a class="viewcode-back" href="../dmmg.html#mzparse.p_error">[docs]</a><span class="k">def</span> <span class="nf">p_error</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Syntax error in input!&quot;</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;unknown text at </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">,))</span>
+
+
+
+<span class="c"># ## ITEMS ##</span>
+
+<span class="c"># def p_model_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;model : epsilon</span>
+<span class="c">#              | item &#39;;&#39; model&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_model_error&#39;</span>
+
+
+<span class="c"># def p_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;item : type_inst_syn_item</span>
+<span class="c">#             | enum_item</span>
+<span class="c">#             | include_item</span>
+<span class="c">#             | var_decl_item</span>
+<span class="c">#             | assign_item</span>
+<span class="c">#             | constraint_item</span>
+<span class="c">#             | solve_item</span>
+<span class="c">#             | output_item</span>
+<span class="c">#             | predicate_item</span>
+<span class="c">#             | test_item</span>
+<span class="c">#             | function_item</span>
+<span class="c">#             | annotation_item&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_item_error&#39;</span>
+
+
+<span class="c"># def p_type_inst_syn_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;type_inst_syn_item : TYPE IDENT annotations &#39;=&#39; ti_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_type_inst_syn_item_error&#39;</span>
+
+
+<span class="c"># def p_enum_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;enum_item : ENUM IDENT annotations</span>
+<span class="c">#                  | ENUM IDENT annotations &#39;=&#39; enum_cases&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_enum_item_error&#39;</span>
+
+
+<span class="c"># def p_enum_cases_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;enum_cases     : &#39;{&#39; enum_case enum_case_star &#39;}&#39;</span>
+<span class="c">#        enum_case_star : epsilon</span>
+<span class="c">#                       | &#39;,&#39; enum_case enum_case_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_enum_cases_error&#39;</span>
+
+
+<span class="c"># def p_enum_case_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;enum_case : IDENT</span>
+<span class="c">#                  | IDENT &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_enum_case_error&#39;</span>
+
+
+<span class="c"># def p_ti_expr_and_id_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ti_expr_and_id : ti_expr &#39;:&#39; IDENT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ti_expr_and_id_error&#39;</span>
+
+
+<span class="c"># def p_include_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;include_item : INCLUDE string_literal&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_include_item_error&#39;</span>
+
+
+<span class="c"># def p_var_decl_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;var_decl_item : ti_expr_and_id annotations</span>
+<span class="c">#                      | ti_expr_and_id annotations &#39;=&#39; expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_var_decl_item_error&#39;</span>
+
+
+<span class="c"># def p_assign_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;assign_item : IDENT &#39;=&#39; expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_assign_item_error&#39;</span>
+
+
+<span class="c"># def p_constraint_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;constraint_item : CONSTRAINT expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_constraint_item_error&#39;</span>
+
+
+<span class="c"># def p_solve_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;solve_item : SOLVE annotations SATISFY</span>
+<span class="c">#                   | SOLVE annotations MINIMIZE expr</span>
+<span class="c">#                   | SOLVE annotations MAXIMIZE expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_solve_item_error&#39;</span>
+
+
+<span class="c"># def p_output_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;output_item : OUTPUT expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_output_item_error&#39;</span>
+
+
+<span class="c"># def p_annotation_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;annotation_item : ANNOTATION IDENT params&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_annotation_item_error&#39;</span>
+
+
+<span class="c"># def p_predicate_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;predicate_item : PREDICATE operation_item_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_predicate_item_error&#39;</span>
+
+
+<span class="c"># def p_test_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;test_item : TEST operation_item_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_test_item_error&#39;</span>
+
+
+<span class="c"># def p_function_item_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;function_item : FUNCTION ti_expr &#39;:&#39; operation_item_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_function_item_error&#39;</span>
+
+
+<span class="c"># def p_operation_item_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;operation_item_tail : IDENT params annotations</span>
+<span class="c">#                            | IDENT params annotations &#39;=&#39; expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_operation_item_tail_error&#39;</span>
+
+
+<span class="c"># def p_params_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;params : epsilon</span>
+<span class="c">#               | &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_params_error&#39;</span>
+
+
+<span class="c"># ## TYPE-INST-EXPRESSIONS ##</span>
+
+
+<span class="c"># def p_ti_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ti_expr : &#39;(&#39; ti_expr &#39;:&#39; IDENT WHERE expr &#39;)&#39;</span>
+<span class="c">#                | base_ti_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ti_expr_error&#39;</span>
+
+
+<span class="c"># def p_base_ti_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;base_ti_expr : var_par base_ti_expr_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_base_ti_expr_error&#39;</span>
+
+
+<span class="c"># def p_var_par_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;var_par : epsilon</span>
+<span class="c">#                | PAR</span>
+<span class="c">#                | VAR&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_var_par_error&#39;</span>
+
+
+<span class="c"># def p_base_ti_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;base_ti_expr_tail : IDENT</span>
+<span class="c">#                          | BOOL</span>
+<span class="c">#                          | INT</span>
+<span class="c">#                          | FLOAT</span>
+<span class="c">#                          | STRING</span>
+<span class="c">#                          | set_ti_expr_tail</span>
+<span class="c">#                          | array_ti_expr_tail</span>
+<span class="c">#                          | tuple_ti_expr_tail</span>
+<span class="c">#                          | record_ti_expr_tail</span>
+<span class="c">#                          | ti_variable_expr_tail</span>
+<span class="c">#                          | ANN</span>
+<span class="c">#                          | op_ti_expr_tail</span>
+<span class="c">#                          | &#39;{&#39; expr expr_star &#39;}&#39;</span>
+<span class="c">#                          | num_expr DOTS num_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_base_ti_expr_tail_error&#39;</span>
+
+
+<span class="c"># def p_set_ti_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;set_ti_expr_tail : SET OF ti_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_set_ti_expr_tail_error&#39;</span>
+
+
+<span class="c"># def p_array_ti_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;array_ti_expr_tail : ARRAY &#39;[&#39; ti_expr ti_expr_star &#39;]&#39; OF ti_expr</span>
+<span class="c">#                           | LIST OF ti_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_tuple_ti_expr_tail_error&#39;</span>
+
+
+<span class="c"># def p_tuple_ti_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;tuple_ti_expr_tail : TUPLE &#39;(&#39; ti_expr ti_expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_tuple_ti_expr_tail_error&#39;</span>
+
+
+<span class="c"># def p_record_ti_exprtail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;record_ti_expr_tail  : RECORD &#39;(&#39; ti_expr_and_id ti_expr_and_id_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_record_ti_exprtail_error&#39;</span>
+
+
+<span class="c"># def p_ti_variable_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ti_variable_expr_tail : IDENT</span>
+<span class="c">#                              | ANY IDENT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ti_variable_expr_tail_error&#39;</span>
+
+
+<span class="c"># def p_op_ti_expr_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;op_ti_expr_tail : OP &#39;(&#39; ti_expr &#39;:&#39; &#39;(&#39; ti_expr ti_expr_star &#39;)&#39; &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_op_ti_expr_tail_error&#39;</span>
+
+
+<span class="c"># ## EXPRESSIONS ##</span>
+
+
+<span class="c"># def p_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr : expr_atom expr_binop_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_error&#39;</span>
+
+
+<span class="c"># def p_expr_atom_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr_atom : expr_atom_head expr_atom_tail annotations&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_atom_error&#39;</span>
+
+
+<span class="c"># def p_expr_binop_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr_binop_tail : epsilon</span>
+<span class="c">#                        | bin_op expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_binop_tail_error&#39;</span>
+
+
+<span class="c"># def p_expr_atom_head_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr_atom_head : builtin_un_op expr_atom</span>
+<span class="c">#                       | &#39;(&#39; expr &#39;)&#39;</span>
+<span class="c">#                       | ident_or_quoted_op</span>
+<span class="c">#                       | &#39;_&#39;</span>
+<span class="c">#                       | bool_literal</span>
+<span class="c">#                       | int_literal</span>
+<span class="c">#                       | float_literal</span>
+<span class="c">#                       | string_literal</span>
+<span class="c">#                       | set_literal</span>
+<span class="c">#                       | set_comp</span>
+<span class="c">#                       | simple_array_literal</span>
+<span class="c">#                       | simple_array_literal_2d</span>
+<span class="c">#                       | indexed_array_literal</span>
+<span class="c">#                       | simple_array_comp</span>
+<span class="c">#                       | indexed_array_comp</span>
+<span class="c">#                       | tuple_literal</span>
+<span class="c">#                       | record_literal</span>
+<span class="c">#                       | enum_literal</span>
+<span class="c">#                       | ann_literal</span>
+<span class="c">#                       | if_then_else_expr</span>
+<span class="c">#                       | case_expr</span>
+<span class="c">#                       | let_expr</span>
+<span class="c">#                       | call_expr</span>
+<span class="c">#                       | gen_call_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_atom_head_error&#39;</span>
+
+
+<span class="c"># def p_expr_atom_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr_atom_tail : epsilon</span>
+<span class="c">#                       | array_access_tail expr_atom_tail</span>
+<span class="c">#                       | tuple_access_tail expr_atom_tail</span>
+<span class="c">#                       | record_access_tail expr_atom_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_atom_tail_error&#39;</span>
+
+
+<span class="c"># def p_num_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;num_expr : num_expr_atom num_expr_binop_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_num_expr_error&#39;</span>
+
+
+<span class="c"># def p_num_expr_atom_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;num_expr_atom : num_expr_atom_head expr_atom_tail annotations&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_num_expr_atom_error&#39;</span>
+
+
+<span class="c"># def p_num_expr_binop_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;num_expr_binop_tail : epsilon</span>
+<span class="c">#                            | num_bin_op num_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_num_expr_binop_tail_error&#39;</span>
+
+
+<span class="c"># def p_num_expr_atom_head_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;num_expr_atom_head : builtin_num_un_op num_expr_atom</span>
+<span class="c">#                           | &#39;(&#39; num_expr &#39;)&#39;</span>
+<span class="c">#                           | ident_or_quoted_op</span>
+<span class="c">#                           | int_literal</span>
+<span class="c">#                           | float_literal</span>
+<span class="c">#                           | if_then_else_expr</span>
+<span class="c">#                           | case_expr</span>
+<span class="c">#                           | let_expr</span>
+<span class="c">#                           | call_expr</span>
+<span class="c">#                           | gen_call_expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_num_expr_atom_head_error&#39;</span>
+
+
+<span class="c"># def p_builtin_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;builtin_op : builtin_bin_op</span>
+<span class="c">#                   | builtin_un_op&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_builtin_op_error&#39;</span>
+
+
+<span class="c"># def p_bin_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;bin_op : builtin_bin_op</span>
+<span class="c">#               | QUOT IDENT QUOT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_bin_op_error&#39;</span>
+
+
+<span class="c"># def p_builtin_bin_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;builtin_bin_op : IFF</span>
+<span class="c">#                       | SUF</span>
+<span class="c">#                       | NEC</span>
+<span class="c">#                       | DIS</span>
+<span class="c">#                       | XOR</span>
+<span class="c">#                       | CON</span>
+<span class="c">#                       | &#39;&lt;&#39;</span>
+<span class="c">#                       | &#39;&gt;&#39;</span>
+<span class="c">#                       | LEQ</span>
+<span class="c">#                       | GEQ</span>
+<span class="c">#                       | EQ</span>
+<span class="c">#                       | &#39;=&#39;</span>
+<span class="c">#                       | DIF</span>
+<span class="c">#                       | IN</span>
+<span class="c">#                       | SUBSET</span>
+<span class="c">#                       | SUPERSET</span>
+<span class="c">#                       | UNION</span>
+<span class="c">#                       | DIFF</span>
+<span class="c">#                       | SYMDIFF</span>
+<span class="c">#                       | DOTS</span>
+<span class="c">#                       | INTERSECT</span>
+<span class="c">#                       | PP</span>
+<span class="c">#                       | builtin_num_bin_op&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_builtin_bin_op_error&#39;</span>
+
+
+<span class="c"># def p_builtin_un_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;builtin_un_op : NOT</span>
+<span class="c">#                      | builtin_num_un_op&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_builtin_un_op_error&#39;</span>
+
+
+<span class="c"># def p_num_bin_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;num_bin_op : builtin_num_bin_op</span>
+<span class="c">#                   | QUOT IDENT QUOT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_num_bin_op_error&#39;</span>
+
+
+<span class="c"># def p_builtin_num_bin_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;builtin_num_bin_op : &#39;+&#39;</span>
+<span class="c">#                           | &#39;-&#39;</span>
+<span class="c">#                           | &#39;*&#39;</span>
+<span class="c">#                           | &#39;/&#39;</span>
+<span class="c">#                           | DIV</span>
+<span class="c">#                           | MOD&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_builtin_num_bin_op_error&#39;</span>
+
+
+<span class="c"># def p_builtin_num_un_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;builtin_num_un_op : &#39;+&#39;</span>
+<span class="c">#                          | &#39;-&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_builtin_num_un_op_error&#39;</span>
+
+
+<span class="c"># def p_bool_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;bool_literal : FALSE</span>
+<span class="c">#                     | TRUE&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_bool_literal_error&#39;</span>
+
+
+<span class="c"># def p_int_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;int_literal : INTLIT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_int_literal_error&#39;</span>
+
+
+<span class="c"># def p_float_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;float_literal : FLOATLIT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_float_literal_error&#39;</span>
+
+
+<span class="c"># def p_string_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;string_literal : STRLIT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_string_literal_error&#39;</span>
+
+
+<span class="c"># def p_set_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;set_literal : &#39;{&#39; expr_star &#39;}&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_set_literal_error&#39;</span>
+
+
+<span class="c"># def p_set_comp_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;set_comp : &#39;{&#39; expr &#39;|&#39; comp_tail &#39;}&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_set_comp_error&#39;</span>
+
+
+<span class="c"># def p_comp_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;comp_tail      : generator generator_star</span>
+<span class="c">#                       | generator generator_star WHERE expr</span>
+<span class="c">#        generator_star : epsilon</span>
+<span class="c">#                       | &#39;,&#39; generator generator_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_comp_tail_error&#39;</span>
+
+
+<span class="c"># def p_generator_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;generator  : IDENT ident_star IN expr</span>
+<span class="c">#        ident_star : epsilon</span>
+<span class="c">#                   | &#39;,&#39; IDENT ident_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_generator_error&#39;</span>
+
+
+<span class="c"># def p_simple_array_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;simple_array_literal : &#39;[&#39; expr_star &#39;]&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_simple_array_literal_error&#39;</span>
+
+
+<span class="c"># def p_simple_array_literal_2d_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;simple_array_literal_2d : &#39;[&#39; &#39;|&#39; array_gen &#39;|&#39; &#39;]&#39;</span>
+<span class="c">#        array_gen               : epsilon</span>
+<span class="c">#                                | expr expr_star array_2d_gen&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_simple_array_literal_2d_error&#39;</span>
+
+
+<span class="c"># def p_array_2d_gen_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;array_2d_gen : epsilon</span>
+<span class="c">#                     | &#39;|&#39; array_gen array_2d_gen&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_array_2d_gen_error&#39;</span>
+
+
+<span class="c"># def p_simple_array_comp_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;simple_array_comp : &#39;[&#39; expr &#39;|&#39; comp_tail &#39;]&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_simple_array_comp_error&#39;</span>
+
+
+<span class="c"># def p_indexed_array_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;indexed_array_literal : &#39;[&#39; &#39;]&#39;</span>
+<span class="c">#                              | &#39;[&#39; index_expr index_expr_star &#39;]&#39;</span>
+<span class="c">#        index_expr_star       : epsilon</span>
+<span class="c">#                              | &#39;,&#39; index_expr index_expr_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_indexed_array_literal_error&#39;</span>
+
+
+<span class="c"># def p_index_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;index_expr : expr &#39;:&#39; expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_index_expr_error&#39;</span>
+
+
+<span class="c"># def p_indexed_array_comp_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;indexed_array_comp : &#39;[&#39; index_expr &#39;|&#39; comp_tail &#39;]&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_indexed_array_comp_error&#39;</span>
+
+
+<span class="c"># def p_array_access_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;array_access_tail : &#39;[&#39; expr expr_star &#39;]&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_array_access_tail_error&#39;</span>
+
+
+<span class="c"># def p_tuple_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;tuple_literal : &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_tuple_literal_error&#39;</span>
+
+
+<span class="c"># def p_tuple_access_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;tuple_access_tail : &#39;.&#39; int_literal&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_tuple_access_tail_error&#39;</span>
+
+
+<span class="c"># def p_record_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;record_literal  : &#39;(&#39; named_expr named_expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_record_literal_error&#39;</span>
+
+
+<span class="c"># def p_named_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;named_expr : IDENT &#39;:&#39; expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_named_expr_error&#39;</span>
+
+
+<span class="c"># def p_record_access_tail_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;record_access_tail : &#39;.&#39; IDENT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_record_access_tail_error&#39;</span>
+
+
+<span class="c"># def p_enum_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;enum_literal    : IDENT &#39;(&#39; named_expr named_expr_star &#39;)&#39;</span>
+<span class="c">#                        | IDENT &#39;(&#39; expr expr_star &#39;)&#39;</span>
+<span class="c">#                        | IDENT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_enum_literal_error&#39;</span>
+
+
+<span class="c"># def p_ann_literal_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ann_literal : IDENT</span>
+<span class="c">#                    | IDENT &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ann_literal_error&#39;</span>
+
+
+<span class="c"># def p_if_then_else_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;if_then_else_expr : IF expr THEN expr elseif_star ELSE expr ENDIF</span>
+<span class="c">#        elseif_star       : epsilon</span>
+<span class="c">#                          | ELSEIF expr THEN expr elseif_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_if_then_else_expr_error&#39;</span>
+
+
+<span class="c"># def p_case_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;case_expr           : CASE expr &#39;{&#39; case_expr_case case_expr_case_star &#39;}&#39;</span>
+<span class="c">#        case_expr_case_star : epsilon</span>
+<span class="c">#                            | &#39;,&#39; case_expr_case case_expr_case_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_case_expr_error&#39;</span>
+
+
+<span class="c"># def p_case_expr_case_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;case_expr_case : IDENT RARROW expr&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_case_expr_case_error&#39;</span>
+
+
+<span class="c"># def p_call_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;call_expr : ident_or_quoted_op</span>
+<span class="c">#                  | ident_or_quoted_op &#39;(&#39; expr expr_star &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_call_expr_error&#39;</span>
+
+
+<span class="c"># def p_let_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;let_expr           : LET &#39;{&#39; var_decl_item var_decl_item_star &#39;}&#39; IN expr</span>
+<span class="c">#        var_decl_item_star : epsilon</span>
+<span class="c">#                           | &#39;,&#39; var_decl_item var_decl_item_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_let_expr_error&#39;</span>
+
+
+<span class="c"># def p_gen_call_expr_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;gen_call_expr : ident_or_quoted_op &#39;(&#39; comp_tail &#39;)&#39; &#39;(&#39; expr &#39;)&#39;&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_gen_call_expr_error&#39;</span>
+
+
+<span class="c"># def p_annotations_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;annotations : epsilon</span>
+<span class="c">#                    | DOUBLECOL annotation annotations&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_annotations_error&#39;</span>
+
+
+<span class="c"># def p_annotation_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;annotation : expr_atom_head expr_atom_tail&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_annotation_error&#39;</span>
+
+
+<span class="c"># ## MISCELLANEOUS ELEMENTS ##</span>
+
+
+<span class="c"># def p_ident_or_quoted_op_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ident_or_quoted_op : IDENT</span>
+<span class="c">#                           | QUOT builtin_op QUOT&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ident_or_quoted_op_error&#39;</span>
+
+
+<span class="c"># def p_epsilon_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;epsilon :&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_epsilon_error&#39;</span>
+
+
+<span class="c"># def p_ti_expr_and_id_star_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ti_expr_and_id_star : epsilon</span>
+<span class="c">#                            | &#39;,&#39; ti_expr_and_id ti_expr_and_id_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ti_expr_and_id_star_error&#39;</span>
+
+
+<span class="c"># def p_expr_star_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;expr_star : epsilon</span>
+<span class="c">#                  | &#39;,&#39; expr expr_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_expr_star_error&#39;</span>
+
+
+<span class="c"># def p_named_expr_star_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;named_expr_star : epsilon</span>
+<span class="c">#                        | &#39;,&#39; named_expr named_expr_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_named_expr_star_error&#39;</span>
+
+
+<span class="c"># def p_ti_expr_star_error(p):</span>
+<span class="c">#     &quot;&quot;&quot;ti_expr_star : epsilon</span>
+<span class="c">#                     | &#39;,&#39; ti_expr ti_expr_star&quot;&quot;&quot;</span>
+<span class="c">#     print &#39;p_ti_expr_star_error&#39;</span>
+
+
+
+<span class="c"># ## Build the parser</span>
+<span class="c"># parser = yacc.yacc()</span>
+
+<span class="c"># filename1, filename2 = sys.argv[1], sys.argv[2]</span>
+
+
+<span class="c"># def load_file(filename):</span>
+<span class="c">#     f = open(filename, &#39;r&#39;)</span>
+<span class="c">#     s = &#39;&#39;</span>
+<span class="c">#     for line in f:</span>
+<span class="c">#         s += line</span>
+<span class="c">#     f.close()</span>
+<span class="c">#     return parser.parse(s)</span>
+
+
+<span class="c"># root1 = load_file(filename1)</span>
+<span class="c"># root2 = load_file(filename2)</span>
+
+<span class="c"># # print root</span>
+<span class="c"># tree_vector1 = root1.create_tree_vector()</span>
+<span class="c"># tree_vector2 = root2.create_tree_vector()</span>
+
+<span class="c"># lcs_vector = lcs_tree_vector(tree_vector1, tree_vector2,</span>
+<span class="c">#                              len(tree_vector1), len(tree_vector2))</span>
+
+<span class="c"># for n in lcs_vector:</span>
+<span class="c">#     print n</span>
+
+<span class="c"># for n in reversed(lcs_vector):</span>
+<span class="c">#     print n[0].dump_subtree_terminals(n[1])[0]</span>
+
+
+<span class="c"># # print tree1</span>
+<span class="c"># # print &#39;==========================================&#39;</span>
+<span class="c"># # print tree2</span>
+<span class="c"># # print &#39;------------------------------------------&#39;</span>
+
+<span class="c"># # print lcs_print(tree1, tree2, len(tree1), len(tree2))</span>
+
+
+
+<span class="c"># # while True:</span>
+<span class="c"># #     try:</span>
+<span class="c"># #         s = raw_input(&#39;calc &gt; &#39;)</span>
+<span class="c"># #     except EOFError:</span>
+<span class="c"># #         break</span>
+<span class="c"># #     if not s:</span>
+<span class="c"># #         continue</span>
+<span class="c"># #     result = parser.parse(s)</span>
+<span class="c"># #     print result</span>
+</div>
+<div class="viewcode-block" id="compute_snippet_elements"><a class="viewcode-back" href="../dmmg.html#mzparse.compute_snippet_elements">[docs]</a><span class="k">def</span> <span class="nf">compute_snippet_elements</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the snippets generated from &#39;s1&#39; and &#39;s2&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">snippet_elems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">yacc</span><span class="o">.</span><span class="n">yacc</span><span class="p">()</span>
+    <span class="n">root1</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+    <span class="n">root2</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+    <span class="n">tree_vector1</span> <span class="o">=</span> <span class="n">root1</span><span class="o">.</span><span class="n">create_tree_vector</span><span class="p">()</span>
+    <span class="n">tree_vector2</span> <span class="o">=</span> <span class="n">root2</span><span class="o">.</span><span class="n">create_tree_vector</span><span class="p">()</span>
+    <span class="n">lcs_tree_vector</span> <span class="o">=</span> <span class="n">lcs_vector</span><span class="p">(</span><span class="n">tree_vector1</span><span class="p">,</span> <span class="n">tree_vector2</span><span class="p">,</span>
+                                 <span class="nb">len</span><span class="p">(</span><span class="n">tree_vector1</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree_vector2</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">lcs_tree_vector</span><span class="p">):</span>
+        <span class="n">snippet_elems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dump_subtree_terminals</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">snippet_elems</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Luca Da Rin Fioretto &lt;lucadrf@nmsu.edu&gt;, Federico Campeotto &lt;campe8@nmsu.edu&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

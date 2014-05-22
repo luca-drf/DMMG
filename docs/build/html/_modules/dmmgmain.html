@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dmmgmain &mdash; DMMG 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DMMG 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for dmmgmain</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">wordorder</span> <span class="kn">as</span> <span class="nn">wo</span>
+<span class="kn">import</span> <span class="nn">semantic</span> <span class="kn">as</span> <span class="nn">sv</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">pos_tag</span><span class="p">,</span> <span class="n">word_tokenize</span><span class="p">,</span> <span class="n">FreqDist</span>
+<span class="kn">from</span> <span class="nn">word</span> <span class="kn">import</span> <span class="n">Word</span>
+<span class="kn">from</span> <span class="nn">nltk.tag.mapping</span> <span class="kn">import</span> <span class="n">map_tag</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">download</span>
+<span class="kn">from</span> <span class="nn">nltk.downloader</span> <span class="kn">import</span> <span class="n">Downloader</span>
+<span class="kn">from</span> <span class="nn">sets</span> <span class="kn">import</span> <span class="n">Set</span>
+<span class="kn">import</span> <span class="nn">settings</span>
+
+
+<div class="viewcode-block" id="nltk_updater"><a class="viewcode-back" href="../dmmg.html#dmmgmain.nltk_updater">[docs]</a><span class="k">def</span> <span class="nf">nltk_updater</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Install or updates needed nltk internal packages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">packages</span> <span class="o">=</span> <span class="n">Set</span><span class="p">([</span><span class="s">&#39;brown&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;wordnet&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;wordnet_ic&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;maxent_treebank_pos_tagger&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;universal_tagset&#39;</span><span class="p">])</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">Downloader</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">default_download_dir</span><span class="p">()):</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">packages</span><span class="p">:</span>
+            <span class="n">packages</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">packages</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Missing&#39;</span><span class="p">,</span> <span class="n">module</span>
+        <span class="n">download</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="filepath_gen"><a class="viewcode-back" href="../dmmg.html#dmmgmain.filepath_gen">[docs]</a><span class="k">def</span> <span class="nf">filepath_gen</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Yield all the filepaths contained in &#39;path&#39; excluding hidden files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">path</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="import_file"><a class="viewcode-back" href="../dmmg.html#dmmgmain.import_file">[docs]</a><span class="k">def</span> <span class="nf">import_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Take a filepath and return a list of tagged words &quot;&quot;&quot;</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">word_tokenize</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">pos_tag</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="retrieve_model_file"><a class="viewcode-back" href="../dmmg.html#dmmgmain.retrieve_model_file">[docs]</a><span class="k">def</span> <span class="nf">retrieve_model_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the filepath of the file containing the model of the</span>
+<span class="sd">    corresponding description contained in &#39;test_filepath&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MODELS_DIR</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="create_corpus"><a class="viewcode-back" href="../dmmg.html#dmmgmain.create_corpus">[docs]</a><span class="k">def</span> <span class="nf">create_corpus</span><span class="p">(</span><span class="n">tagged</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Take a list of tagged words and return a corpus as a list of tagged</span>
+<span class="sd">    words with universal tagging and filtering all non-word entries &quot;&quot;&quot;</span>
+    <span class="n">corpus</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">tagged</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="s">r&#39;[a-zA-Z0-9_-]+&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">corpus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Word</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                              <span class="n">map_tag</span><span class="p">(</span><span class="s">&#39;en-ptb&#39;</span><span class="p">,</span> <span class="s">&#39;universal&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&#39;Part mismatch:&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">corpus</span>
+
+</div>
+<div class="viewcode-block" id="print_stats"><a class="viewcode-back" href="../dmmg.html#dmmgmain.print_stats">[docs]</a><span class="k">def</span> <span class="nf">print_stats</span><span class="p">(</span><span class="n">order_vector_1</span><span class="p">,</span> <span class="n">order_vector_2</span><span class="p">,</span> <span class="n">wos_measure</span><span class="p">,</span>
+                <span class="n">semantic_vector_1</span><span class="p">,</span> <span class="n">semantic_vector_2</span><span class="p">,</span> <span class="n">sem_measure</span><span class="p">,</span>
+                <span class="n">overall_similarity</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Print similarity statistics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># print &#39;== Order Vectors ==&#39;</span>
+    <span class="c"># print order_vector_1</span>
+    <span class="c"># print order_vector_2</span>
+    <span class="k">print</span> <span class="s">&#39;&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;W.O. Similarity:&#39;</span><span class="p">,</span> <span class="n">wos_measure</span>
+    <span class="c"># print &#39;&#39;</span>
+    <span class="c"># print &#39;== Semantic Vectors ==&#39;</span>
+    <span class="c"># print semantic_vector_1</span>
+    <span class="c"># print semantic_vector_2</span>
+    <span class="c"># print &#39;&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;Semantic Similarity:&#39;</span><span class="p">,</span> <span class="n">sem_measure</span>
+    <span class="k">print</span> <span class="s">&#39;---------------------------------&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;Overall Similarity:&#39;</span><span class="p">,</span> <span class="n">overall_similarity</span><span class="p">,</span>
+    <span class="k">print</span> <span class="s">&#39;Computed in </span><span class="si">%s</span><span class="s"> sec.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="similarity"><a class="viewcode-back" href="../dmmg.html#dmmgmain.similarity">[docs]</a><span class="k">def</span> <span class="nf">similarity</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the overall similarity, semantic similarity and word order</span>
+<span class="sd">    similarity between &#39;file1&#39; and &#39;file2&#39; with the given &#39;delta&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tw_start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&#39;Importing files...&#39;</span>
+    <span class="k">print</span> <span class="n">file2</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tagged</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">map_async</span><span class="p">(</span><span class="n">import_file</span><span class="p">,</span> <span class="p">(</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">UnicodeDecodeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">error</span>
+        <span class="k">print</span> <span class="s">&#39;File1:&#39;</span><span class="p">,</span> <span class="n">file1</span>
+        <span class="k">print</span> <span class="s">&#39;File2:&#39;</span><span class="p">,</span> <span class="n">file2</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&#39;Creating corpus...&#39;</span>
+    <span class="n">corpus</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">map_async</span><span class="p">(</span><span class="n">create_corpus</span><span class="p">,</span> <span class="n">tagged</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+    <span class="k">print</span> <span class="s">&#39;Creating joint wordset...&#39;</span>
+    <span class="n">joint_word_set</span> <span class="o">=</span> <span class="n">wo</span><span class="o">.</span><span class="n">create_jointset</span><span class="p">(</span><span class="n">corpus</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corpus</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">print</span> <span class="s">&#39;Creating order vectors...&#39;</span>
+    <span class="n">order_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">wo</span><span class="o">.</span><span class="n">create_ordervec</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">joint_word_set</span><span class="p">))</span>
+                     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">corpus</span><span class="p">]</span>
+
+    <span class="c"># Calculate the Word Order Similarity of the two vectors</span>
+    <span class="n">wos_measure</span> <span class="o">=</span> <span class="n">wo</span><span class="o">.</span><span class="n">order_similarity</span><span class="p">(</span><span class="n">order_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span>
+                                      <span class="n">order_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+
+    <span class="k">print</span> <span class="s">&#39;Creating semantic vectors...&#39;</span>
+    <span class="c"># fdist = FreqDist(brown.words())</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;dmmg/fdist.json&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">fdist</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">freqs</span><span class="p">)</span>
+
+    <span class="n">semantic_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">sv</span><span class="o">.</span><span class="n">generate</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">joint_word_set</span><span class="p">,</span> <span class="n">fdist</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">corpus</span><span class="p">]</span>
+    <span class="n">sem_measure</span> <span class="o">=</span> <span class="n">sv</span><span class="o">.</span><span class="n">sem_similarity</span><span class="p">(</span><span class="n">semantic_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span>
+                                    <span class="n">semantic_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="n">overall_similarity</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">sem_measure</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">wos_measure</span>
+
+    <span class="n">tw_stop</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">print_stats</span><span class="p">(</span><span class="n">order_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">order_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">wos_measure</span><span class="p">,</span>
+                <span class="n">semantic_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">semantic_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span>
+                <span class="n">sem_measure</span><span class="p">,</span> <span class="n">overall_similarity</span><span class="p">,</span> <span class="p">(</span><span class="n">tw_start</span><span class="p">,</span> <span class="n">tw_stop</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">overall_similarity</span><span class="p">,</span> <span class="n">sem_measure</span><span class="p">,</span> <span class="n">wos_measure</span>
+
+</div>
+<div class="viewcode-block" id="Storage"><a class="viewcode-back" href="../dmmg.html#dmmgmain.Storage">[docs]</a><span class="k">class</span> <span class="nc">Storage</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">similarity</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">similarity</span> <span class="o">=</span> <span class="n">similarity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;sim: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;sim: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Storage.store"><a class="viewcode-back" href="../dmmg.html#dmmgmain.Storage.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stores tuples whose similarity is greater or equal a certain</span>
+<span class="sd">        treshold set in Storage.similarity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
+
+    <span class="c"># # The following code is in case we want to track a fixed number of files</span>
+    <span class="c"># def store(self, tup):</span>
+    <span class="c">#     &quot;&quot;&quot;Binary search and insert&quot;&quot;&quot;</span>
+    <span class="c">#     if tup[0] &gt;= self.similarity:</span>
+    <span class="c">#         l = 0</span>
+    <span class="c">#         r = len(self.elements) - 1</span>
+    <span class="c">#         indx = 0</span>
+    <span class="c">#         # Store the insertion point in indx</span>
+    <span class="c">#         while l &lt;= r:</span>
+    <span class="c">#             mid = l + (r - l) / 2</span>
+    <span class="c">#             if self.elements[mid] == tup:</span>
+    <span class="c">#                 indx = mid + 1</span>
+    <span class="c">#                 break</span>
+    <span class="c">#             elif self.elements[mid] &gt; tup:</span>
+    <span class="c">#                 if l == r:</span>
+    <span class="c">#                     indx = mid + 1</span>
+    <span class="c">#                 l = mid + 1</span>
+    <span class="c">#             else:</span>
+    <span class="c">#                 if l == r:</span>
+    <span class="c">#                     indx = mid - 1</span>
+    <span class="c">#                 r = mid - 1</span>
+    <span class="c">#         self.elements.insert(indx, tup)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Luca Da Rin Fioretto &lt;lucadrf@nmsu.edu&gt;, Federico Campeotto &lt;campe8@nmsu.edu&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

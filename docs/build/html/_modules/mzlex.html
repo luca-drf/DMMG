@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mzlex &mdash; DMMG 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DMMG 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for mzlex</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">ply.lex</span> <span class="kn">as</span> <span class="nn">lex</span>
+
+<span class="n">reserved</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;ann&#39;</span>        <span class="p">:</span> <span class="s">&#39;ANN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;annotation&#39;</span> <span class="p">:</span> <span class="s">&#39;ANNOTATION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;any&#39;</span>        <span class="p">:</span> <span class="s">&#39;ANY&#39;</span><span class="p">,</span>
+    <span class="s">&#39;array&#39;</span>      <span class="p">:</span> <span class="s">&#39;ARRAY&#39;</span><span class="p">,</span>
+    <span class="s">&#39;assert&#39;</span>     <span class="p">:</span> <span class="s">&#39;ASSERT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;bool&#39;</span>       <span class="p">:</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span>
+    <span class="s">&#39;case&#39;</span>       <span class="p">:</span> <span class="s">&#39;CASE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;constraint&#39;</span> <span class="p">:</span> <span class="s">&#39;CONSTRAINT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;diff&#39;</span>       <span class="p">:</span> <span class="s">&#39;DIFF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;div&#39;</span>        <span class="p">:</span> <span class="s">&#39;DIV&#39;</span><span class="p">,</span>
+    <span class="s">&#39;else&#39;</span>       <span class="p">:</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;elseif&#39;</span>     <span class="p">:</span> <span class="s">&#39;ELSEIF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;endif&#39;</span>      <span class="p">:</span> <span class="s">&#39;ENDIF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;enum&#39;</span>       <span class="p">:</span> <span class="s">&#39;ENUM&#39;</span><span class="p">,</span>
+    <span class="s">&#39;false&#39;</span>      <span class="p">:</span> <span class="s">&#39;FALSE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;float&#39;</span>      <span class="p">:</span> <span class="s">&#39;FLOAT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;function&#39;</span>   <span class="p">:</span> <span class="s">&#39;FUNCTION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;in&#39;</span>         <span class="p">:</span> <span class="s">&#39;IN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;include&#39;</span>    <span class="p">:</span> <span class="s">&#39;INCLUDE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;int&#39;</span>        <span class="p">:</span> <span class="s">&#39;INT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;if&#39;</span>         <span class="p">:</span> <span class="s">&#39;IF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;intersect&#39;</span>  <span class="p">:</span> <span class="s">&#39;INTERSECT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;let&#39;</span>        <span class="p">:</span> <span class="s">&#39;LET&#39;</span><span class="p">,</span>
+    <span class="s">&#39;list&#39;</span>       <span class="p">:</span> <span class="s">&#39;LIST&#39;</span><span class="p">,</span>
+    <span class="s">&#39;of&#39;</span>         <span class="p">:</span> <span class="s">&#39;OF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;op&#39;</span>         <span class="p">:</span> <span class="s">&#39;OP&#39;</span><span class="p">,</span>
+    <span class="s">&#39;output&#39;</span>     <span class="p">:</span> <span class="s">&#39;OUTPUT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;minimize&#39;</span>   <span class="p">:</span> <span class="s">&#39;MINIMIZE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;maximize&#39;</span>   <span class="p">:</span> <span class="s">&#39;MAXIMIZE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;mod&#39;</span>        <span class="p">:</span> <span class="s">&#39;MOD&#39;</span><span class="p">,</span>
+    <span class="s">&#39;not&#39;</span>        <span class="p">:</span> <span class="s">&#39;NOT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;par&#39;</span>        <span class="p">:</span> <span class="s">&#39;PAR&#39;</span><span class="p">,</span>
+    <span class="s">&#39;predicate&#39;</span>  <span class="p">:</span> <span class="s">&#39;PREDICATE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;record&#39;</span>     <span class="p">:</span> <span class="s">&#39;RECORD&#39;</span><span class="p">,</span>
+    <span class="s">&#39;satisfy&#39;</span>    <span class="p">:</span> <span class="s">&#39;SATISFY&#39;</span><span class="p">,</span>
+    <span class="s">&#39;set&#39;</span>        <span class="p">:</span> <span class="s">&#39;SET&#39;</span><span class="p">,</span>
+    <span class="s">&#39;solve&#39;</span>      <span class="p">:</span> <span class="s">&#39;SOLVE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;string&#39;</span>     <span class="p">:</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span>
+    <span class="s">&#39;subset&#39;</span>     <span class="p">:</span> <span class="s">&#39;SUBSET&#39;</span><span class="p">,</span>
+    <span class="s">&#39;superset&#39;</span>   <span class="p">:</span> <span class="s">&#39;SUPERSET&#39;</span><span class="p">,</span>
+    <span class="s">&#39;symdiff&#39;</span>    <span class="p">:</span> <span class="s">&#39;SYMDIFF&#39;</span><span class="p">,</span>
+    <span class="s">&#39;test&#39;</span>       <span class="p">:</span> <span class="s">&#39;TEST&#39;</span><span class="p">,</span>
+    <span class="s">&#39;then&#39;</span>       <span class="p">:</span> <span class="s">&#39;THEN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;true&#39;</span>       <span class="p">:</span> <span class="s">&#39;TRUE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;tuple&#39;</span>      <span class="p">:</span> <span class="s">&#39;TUPLE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;type&#39;</span>       <span class="p">:</span> <span class="s">&#39;TYPE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;union&#39;</span>      <span class="p">:</span> <span class="s">&#39;UNION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;var&#39;</span>        <span class="p">:</span> <span class="s">&#39;VAR&#39;</span><span class="p">,</span>
+    <span class="s">&#39;where&#39;</span>      <span class="p">:</span> <span class="s">&#39;WHERE&#39;</span><span class="p">,</span>
+    <span class="s">&#39;xor&#39;</span>        <span class="p">:</span> <span class="s">&#39;XOR&#39;</span>
+    <span class="p">}</span>
+
+<span class="c"># List of token names.</span>
+<span class="n">tokens</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="c"># Operators</span>
+          <span class="s">&#39;IFF&#39;</span><span class="p">,</span>
+          <span class="s">&#39;INTLIT&#39;</span><span class="p">,</span>
+          <span class="s">&#39;FLOATLIT&#39;</span><span class="p">,</span>
+          <span class="s">&#39;STRLIT&#39;</span><span class="p">,</span>
+          <span class="s">&#39;SUF&#39;</span><span class="p">,</span>
+          <span class="s">&#39;NEC&#39;</span><span class="p">,</span>
+          <span class="s">&#39;DIS&#39;</span><span class="p">,</span>
+          <span class="s">&#39;DOUBLECOL&#39;</span><span class="p">,</span>
+          <span class="s">&#39;QUOT&#39;</span><span class="p">,</span>
+          <span class="s">&#39;CON&#39;</span><span class="p">,</span>
+          <span class="s">&#39;LEQ&#39;</span><span class="p">,</span>
+          <span class="s">&#39;GEQ&#39;</span><span class="p">,</span>
+          <span class="s">&#39;EQ&#39;</span><span class="p">,</span>
+          <span class="s">&#39;DIF&#39;</span><span class="p">,</span>
+          <span class="s">&#39;DOTS&#39;</span><span class="p">,</span>
+          <span class="s">&#39;PP&#39;</span><span class="p">,</span>
+          <span class="s">&#39;RARROW&#39;</span><span class="p">,</span>
+          <span class="s">&#39;IDENT&#39;</span>
+         <span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">reserved</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+
+<span class="n">literals</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&#39;-&#39;</span><span class="p">,</span><span class="s">&#39;&lt;&#39;</span><span class="p">,</span><span class="s">&#39;&gt;&#39;</span><span class="p">,</span><span class="s">&#39;=&#39;</span><span class="p">,</span><span class="s">&#39;+&#39;</span><span class="p">,</span><span class="s">&#39;*&#39;</span><span class="p">,</span><span class="s">&#39;/&#39;</span><span class="p">,</span><span class="s">&#39;;&#39;</span><span class="p">,</span><span class="s">&#39;:&#39;</span><span class="p">,</span><span class="s">&#39;,&#39;</span><span class="p">,</span><span class="s">&#39;.&#39;</span><span class="p">,</span><span class="s">&#39;_&#39;</span><span class="p">,</span>
+             <span class="s">&#39;(&#39;</span><span class="p">,</span><span class="s">&#39;)&#39;</span><span class="p">,</span><span class="s">&#39;[&#39;</span><span class="p">,</span><span class="s">&#39;]&#39;</span><span class="p">,</span><span class="s">&#39;{&#39;</span><span class="p">,</span><span class="s">&#39;}&#39;</span><span class="p">,</span><span class="s">&#39;|&#39;</span> <span class="p">]</span>
+
+<span class="c"># Operators</span>
+<span class="n">t_QUOT</span>      <span class="o">=</span> <span class="s">r&#39;</span><span class="se">\&#39;</span><span class="s">&#39;</span>
+<span class="n">t_DOUBLECOL</span> <span class="o">=</span> <span class="s">r&#39;::&#39;</span>
+<span class="n">t_EQ</span>        <span class="o">=</span> <span class="s">r&#39;==&#39;</span>
+<span class="n">t_LEQ</span>       <span class="o">=</span> <span class="s">r&#39;&lt;=&#39;</span>
+<span class="n">t_GEQ</span>       <span class="o">=</span> <span class="s">r&#39;&gt;=&#39;</span>
+<span class="n">t_DIF</span>       <span class="o">=</span> <span class="s">r&#39;!=&#39;</span>
+<span class="n">t_SUF</span>       <span class="o">=</span> <span class="s">r&#39;-&gt;&#39;</span>
+<span class="n">t_NEC</span>       <span class="o">=</span> <span class="s">r&#39;&lt;-&#39;</span>
+<span class="n">t_IFF</span>       <span class="o">=</span> <span class="s">r&#39;&lt;-&gt;&#39;</span>
+<span class="n">t_CON</span>       <span class="o">=</span> <span class="s">r&#39;/</span><span class="se">\\</span><span class="s">&#39;</span>
+<span class="n">t_RARROW</span>    <span class="o">=</span> <span class="s">r&#39;--&gt;&#39;</span>
+<span class="n">t_DOTS</span>      <span class="o">=</span> <span class="s">r&#39;\.\.&#39;</span>
+<span class="n">t_PP</span>        <span class="o">=</span> <span class="s">r&#39;\+\+&#39;</span>
+<span class="n">t_DIS</span>       <span class="o">=</span> <span class="s">r&#39;</span><span class="se">\\</span><span class="s">/&#39;</span>
+<span class="n">t_INTLIT</span>    <span class="o">=</span> <span class="s">r&#39;0x[0-9A-Fa-f]+|0o[0-7]+|[0-9]+&#39;</span>
+<span class="n">t_FLOATLIT</span>  <span class="o">=</span> <span class="s">r&#39;[0-9]+\.[0-9]+[Ee][-+]?[0-9]+|[0-9]+[Ee][-+]?[0-9]+|[0-9]+\.[0-9]+&#39;</span>
+<span class="n">t_STRLIT</span>    <span class="o">=</span> <span class="s">r&#39;&quot;[^&quot;\n]*&quot;&#39;</span>
+<span class="n">t_ignore</span>    <span class="o">=</span> <span class="s">&#39; </span><span class="se">\t</span><span class="s">&#39;</span>
+
+
+<span class="c"># No return value. Token discarded</span>
+<div class="viewcode-block" id="t_COMMENT"><a class="viewcode-back" href="../dmmg.html#mzlex.t_COMMENT">[docs]</a><span class="k">def</span> <span class="nf">t_COMMENT</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="s">r&#39;\%.*&#39;</span>
+    <span class="k">pass</span>
+
+
+<span class="c"># Check for reserved words</span></div>
+<div class="viewcode-block" id="t_IDENT"><a class="viewcode-back" href="../dmmg.html#mzlex.t_IDENT">[docs]</a><span class="k">def</span> <span class="nf">t_IDENT</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="s">r&#39;[A-Za-z][A-Za-z0-9_]*&#39;</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">reserved</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="s">&#39;IDENT&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span>
+
+<span class="c"># Define a rule so we can track line numbers</span></div>
+<div class="viewcode-block" id="t_newline"><a class="viewcode-back" href="../dmmg.html#mzlex.t_newline">[docs]</a><span class="k">def</span> <span class="nf">t_newline</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="s">r&#39;\n+&#39;</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">lexer</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="c"># Error handling rule</span></div>
+<div class="viewcode-block" id="t_error"><a class="viewcode-back" href="../dmmg.html#mzlex.t_error">[docs]</a><span class="k">def</span> <span class="nf">t_error</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Illegal character &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">t</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">lexer</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># Build the lexer</span></div>
+<span class="n">lexer</span> <span class="o">=</span> <span class="n">lex</span><span class="o">.</span><span class="n">lex</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Luca Da Rin Fioretto &lt;lucadrf@nmsu.edu&gt;, Federico Campeotto &lt;campe8@nmsu.edu&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

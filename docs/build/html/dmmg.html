@@ -1,0 +1,1172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dmmg package &mdash; DMMG 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DMMG 0.0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">DMMG 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dmmg-package">
+<h1>dmmg package<a class="headerlink" href="#dmmg-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-clustering">
+<span id="clustering-module"></span><h2>clustering module<a class="headerlink" href="#module-clustering" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="clustering.FileIndexer">
+<em class="property">class </em><tt class="descclassname">clustering.</tt><tt class="descname">FileIndexer</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/clustering.html#FileIndexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.FileIndexer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="clustering.InstructionsIndex">
+<em class="property">class </em><tt class="descclassname">clustering.</tt><tt class="descname">InstructionsIndex</tt><a class="reference internal" href="_modules/clustering.html#InstructionsIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.InstructionsIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustering.clusterize">
+<tt class="descclassname">clustering.</tt><tt class="descname">clusterize</tt><big>(</big><em>listoclusters</em><big>)</big><a class="reference internal" href="_modules/clustering.html#clusterize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.clusterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create clusters starting from a list of lists of single elements</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustering.initialize_clusters">
+<tt class="descclassname">clustering.</tt><tt class="descname">initialize_clusters</tt><big>(</big><em>file_dicts</em><big>)</big><a class="reference internal" href="_modules/clustering.html#initialize_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.initialize_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill a feature list (InstructionsIndex) set with all the instructions
+passed as file_dicts. Remove a feature if it is not present in all files.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustering.set_clustroid_mate">
+<tt class="descclassname">clustering.</tt><tt class="descname">set_clustroid_mate</tt><big>(</big><em>listoclusters</em><big>)</big><a class="reference internal" href="_modules/clustering.html#set_clustroid_mate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.set_clustroid_mate" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each cluster, set the [-2] element as the closest to the clustroid</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustering.update_clustroid">
+<tt class="descclassname">clustering.</tt><tt class="descname">update_clustroid</tt><big>(</big><em>cluster</em><big>)</big><a class="reference internal" href="_modules/clustering.html#update_clustroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustering.update_clustroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the clustroid in a cluster using the minimum sum of squares</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-distances">
+<span id="distances-module"></span><h2>distances module<a class="headerlink" href="#module-distances" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="distances.edit_dist">
+<tt class="descclassname">distances.</tt><tt class="descname">edit_dist</tt><big>(</big><em>s1</em>, <em>s2</em><big>)</big><a class="reference internal" href="_modules/distances.html#edit_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#distances.edit_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the edit distance (insertions and deletions only) between two
+sequences s1 and s2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distances.lcs">
+<tt class="descclassname">distances.</tt><tt class="descname">lcs</tt><big>(</big><em>X</em>, <em>Y</em>, <em>m</em>, <em>n</em><big>)</big><a class="reference internal" href="_modules/distances.html#lcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#distances.lcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the matrix (as a numpy 2D array) of the longest common
+subsequence between two sequences X and Y, where m and n are respectively
+<a href="#id1"><span class="problematic" id="id2">|X|</span></a> and <a href="#id3"><span class="problematic" id="id4">|Y|</span></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distances.lcs_len">
+<tt class="descclassname">distances.</tt><tt class="descname">lcs_len</tt><big>(</big><em>X</em>, <em>Y</em>, <em>m</em>, <em>n</em><big>)</big><a class="reference internal" href="_modules/distances.html#lcs_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#distances.lcs_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the lenght of the longest common subsequence between two
+sequences X and Y, where m and n are respectively <a href="#id5"><span class="problematic" id="id6">|X|</span></a> and <a href="#id7"><span class="problematic" id="id8">|Y|</span></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distances.lcs_print">
+<tt class="descclassname">distances.</tt><tt class="descname">lcs_print</tt><big>(</big><em>X</em>, <em>Y</em>, <em>i</em>, <em>j</em>, <em>allign=True</em><big>)</big><a class="reference internal" href="_modules/distances.html#lcs_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#distances.lcs_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the longest common subsequence between two sequences X and Y,
+where m and n are respectively <a href="#id9"><span class="problematic" id="id10">|X|</span></a> and <a href="#id11"><span class="problematic" id="id12">|Y|</span></a>. If allign is set to True
+(default) the print function will print also the gaps as &#8216;~&#8217;.
+Example: &#8216;abaco&#8217; and &#8216;abbacchio&#8217; will generate &#8216;a~ba~c~~o&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distances.lcs_vector">
+<tt class="descclassname">distances.</tt><tt class="descname">lcs_vector</tt><big>(</big><em>X</em>, <em>Y</em>, <em>i</em>, <em>j</em><big>)</big><a class="reference internal" href="_modules/distances.html#lcs_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#distances.lcs_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of pairs, each pair contains the starting element and the
+length for each continuos subsequence found.
+Example: &#8216;abbaino&#8217; and &#8216;abbacchio&#8217; will generate the allignment
+&#8216;abba~~~i~o&#8217;, lcs_vector will return [[&#8216;o&#8217;, 1], [&#8216;i&#8217;, 1], [&#8216;a&#8217;, 4]]</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dmmgclient">
+<span id="dmmgclient-module"></span><h2>dmmgclient module<a class="headerlink" href="#module-dmmgclient" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dmmgclient.client_manager">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">client_manager</tt><big>(</big><em>ip</em>, <em>port</em>, <em>AUTH</em><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#client_manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.client_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects and return a ClientManager object to the ServerManager object
+listening on &#8216;port&#8217; at &#8216;ip&#8217;. Both managers must share the same &#8216;AUTH&#8217;
+(authentication key).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgclient.compute_clusters">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">compute_clusters</tt><big>(</big><em>job</em><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#compute_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.compute_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple containing:
+(keyword, clusters) calling clustering.clusterize()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgclient.compute_similarity">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">compute_similarity</tt><big>(</big><em>job</em><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#compute_similarity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.compute_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple containing:
+(query, filename, similarity, semantic similarity, word order similarity)
+calling dmmgmain.similarity().</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgclient.dmmg_worker">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">dmmg_worker</tt><big>(</big><em>job_q</em>, <em>result_q</em>, <em>jobs_e</em><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#dmmg_worker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.dmmg_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>While jobs_e is true pop a job from the shared job queue, resolve the
+task given and push the result on the shared result queue.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgclient.start">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the client with the configuration specified in settings.py.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgclient.worker_manager">
+<tt class="descclassname">dmmgclient.</tt><tt class="descname">worker_manager</tt><big>(</big><em>s_job_q</em>, <em>s_result_q</em>, <em>s_jobs_e</em>, <em>nprocs</em><big>)</big><a class="reference internal" href="_modules/dmmgclient.html#worker_manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgclient.worker_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spawns &#8216;nprocs&#8217; processes join them when they are done.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dmmgmain">
+<span id="dmmgmain-module"></span><h2>dmmgmain module<a class="headerlink" href="#module-dmmgmain" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dmmgmain.Storage">
+<em class="property">class </em><tt class="descclassname">dmmgmain.</tt><tt class="descname">Storage</tt><big>(</big><em>similarity</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#Storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.Storage" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="dmmgmain.Storage.store">
+<tt class="descname">store</tt><big>(</big><em>tup</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#Storage.store"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.Storage.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores tuples whose similarity is greater or equal a certain
+treshold set in Storage.similarity.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.create_corpus">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">create_corpus</tt><big>(</big><em>tagged</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#create_corpus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.create_corpus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a list of tagged words and return a corpus as a list of tagged
+words with universal tagging and filtering all non-word entries</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.filepath_gen">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">filepath_gen</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#filepath_gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.filepath_gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield all the filepaths contained in &#8216;path&#8217; excluding hidden files.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.import_file">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">import_file</tt><big>(</big><em>filepath</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#import_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.import_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a filepath and return a list of tagged words</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.nltk_updater">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">nltk_updater</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#nltk_updater"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.nltk_updater" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install or updates needed nltk internal packages.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.print_stats">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">print_stats</tt><big>(</big><em>order_vector_1</em>, <em>order_vector_2</em>, <em>wos_measure</em>, <em>semantic_vector_1</em>, <em>semantic_vector_2</em>, <em>sem_measure</em>, <em>overall_similarity</em>, <em>time</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#print_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.print_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print similarity statistics.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.retrieve_model_file">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">retrieve_model_file</tt><big>(</big><em>test_filepath</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#retrieve_model_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.retrieve_model_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the filepath of the file containing the model of the
+corresponding description contained in &#8216;test_filepath&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dmmgmain.similarity">
+<tt class="descclassname">dmmgmain.</tt><tt class="descname">similarity</tt><big>(</big><em>delta</em>, <em>file1</em>, <em>file2</em><big>)</big><a class="reference internal" href="_modules/dmmgmain.html#similarity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgmain.similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the overall similarity, semantic similarity and word order
+similarity between &#8216;file1&#8217; and &#8216;file2&#8217; with the given &#8216;delta&#8217;.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dmmgserver">
+<span id="dmmgserver-module"></span><h2>dmmgserver module<a class="headerlink" href="#module-dmmgserver" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dmmgserver.extract_snippets">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">extract_snippets</tt><big>(</big><em>clusters</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#extract_snippets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.extract_snippets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.file_manager">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">file_manager</tt><big>(</big><em>query_path</em>, <em>test_path</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#file_manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.file_manager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.nicely_print">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">nicely_print</tt><big>(</big><em>snippets</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#nicely_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.nicely_print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.retrieve_clustering_results">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">retrieve_clustering_results</tt><big>(</big><em>job_n</em>, <em>s_result_q</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#retrieve_clustering_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.retrieve_clustering_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.retrieve_similarity_results">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">retrieve_similarity_results</tt><big>(</big><em>job_n</em>, <em>s_result_q</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#retrieve_similarity_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.retrieve_similarity_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.send_clustering_tasks">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">send_clustering_tasks</tt><big>(</big><em>similarities</em>, <em>s_job_q</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#send_clustering_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.send_clustering_tasks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.send_similarity_tasks">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">send_similarity_tasks</tt><big>(</big><em>delta</em>, <em>queryset</em>, <em>testset</em>, <em>s_job_q</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#send_similarity_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.send_similarity_tasks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.server_manager">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">server_manager</tt><big>(</big><em>port</em>, <em>AUTH</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#server_manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.server_manager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dmmgserver.start">
+<tt class="descclassname">dmmgserver.</tt><tt class="descname">start</tt><big>(</big><em>args</em><big>)</big><a class="reference internal" href="_modules/dmmgserver.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dmmgserver.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mzlex">
+<span id="mzlex-module"></span><h2>mzlex module<a class="headerlink" href="#module-mzlex" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mzlex.t_COMMENT">
+<tt class="descclassname">mzlex.</tt><tt class="descname">t_COMMENT</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/mzlex.html#t_COMMENT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzlex.t_COMMENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>%.*</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzlex.t_IDENT">
+<tt class="descclassname">mzlex.</tt><tt class="descname">t_IDENT</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/mzlex.html#t_IDENT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzlex.t_IDENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>[A-Za-z][<a href="#id13"><span class="problematic" id="id14">A-Za-z0-9_</span></a>]*</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzlex.t_error">
+<tt class="descclassname">mzlex.</tt><tt class="descname">t_error</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/mzlex.html#t_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzlex.t_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mzlex.t_newline">
+<tt class="descclassname">mzlex.</tt><tt class="descname">t_newline</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/mzlex.html#t_newline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzlex.t_newline" title="Permalink to this definition">¶</a></dt>
+<dd><p>n+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mzparse">
+<span id="mzparse-module"></span><h2>mzparse module<a class="headerlink" href="#module-mzparse" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mzparse.Node">
+<em class="property">class </em><tt class="descclassname">mzparse.</tt><tt class="descname">Node</tt><big>(</big><em>typ</em>, <em>leafs</em>, <em>children</em>, <em>prod</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.Node" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="mzparse.Node.create_tree_vector">
+<tt class="descname">create_tree_vector</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mzparse.html#Node.create_tree_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.Node.create_tree_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a vector containing nodes in a dfs order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mzparse.Node.dump_subtree_terminals">
+<tt class="descname">dump_subtree_terminals</tt><big>(</big><em>lev</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#Node.dump_subtree_terminals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.Node.dump_subtree_terminals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing the terminals producted by the grammar
+that has generated this tree. The lev parameter specify when to stop</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mzparse.Node.dump_tree">
+<tt class="descname">dump_tree</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mzparse.html#Node.dump_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.Node.dump_tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mzparse.Node.dump_tree_terminals">
+<tt class="descname">dump_tree_terminals</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mzparse.html#Node.dump_tree_terminals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.Node.dump_tree_terminals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing the terminals producted by the grammar
+that has generated this tree.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.compute_snippet_elements">
+<tt class="descclassname">mzparse.</tt><tt class="descname">compute_snippet_elements</tt><big>(</big><em>s1</em>, <em>s2</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#compute_snippet_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.compute_snippet_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the snippets generated from &#8216;s1&#8217; and &#8216;s2&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ann_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ann_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ann_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ann_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>ann_literal : IDENT
+| IDENT &#8216;(&#8216; expr expr_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_annotation">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_annotation</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_annotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotation : expr_atom_head expr_atom_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_annotation_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_annotation_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_annotation_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_annotation_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotation_item : ANNOTATION IDENT params</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_annotations">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_annotations</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotations : epsilon
+| DOUBLECOL annotation annotations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_array_2d_gen">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_array_2d_gen</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_array_2d_gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_array_2d_gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>array_2d_gen : epsilon
+| &#8216;|&#8217; array_gen array_2d_gen</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_array_access_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_array_access_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_array_access_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_array_access_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>array_access_tail : &#8216;[&#8216; expr expr_star &#8216;]&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_array_ti_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_array_ti_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_array_ti_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_array_ti_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>array_ti_expr_tail : ARRAY &#8216;[&#8216; ti_expr ti_expr_star &#8216;]&#8217; OF ti_expr
+| LIST OF ti_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_assign_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_assign_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_assign_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_assign_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>assign_item : IDENT &#8216;=&#8217; expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_base_ti_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_base_ti_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_base_ti_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_base_ti_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>base_ti_expr : var_par base_ti_expr_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_base_ti_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_base_ti_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_base_ti_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_base_ti_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>base_ti_expr_tail : IDENT
+| BOOL
+| INT
+| FLOAT
+| STRING
+| set_ti_expr_tail
+| array_ti_expr_tail
+| tuple_ti_expr_tail
+| record_ti_expr_tail
+| ti_variable_expr_tail
+| ANN
+| op_ti_expr_tail
+| &#8216;{&#8216; expr expr_star &#8216;}&#8217;
+| num_expr DOTS num_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_bin_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_bin_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_bin_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_bin_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>bin_op : builtin_bin_op
+| QUOT IDENT QUOT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_bool_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_bool_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_bool_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_bool_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool_literal : FALSE
+| TRUE</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_builtin_bin_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_builtin_bin_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_builtin_bin_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_builtin_bin_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>builtin_bin_op : IFF
+| SUF
+| NEC
+| DIS
+| XOR
+| CON
+| &#8216;&lt;&#8217;
+| &#8216;&gt;&#8217;
+| LEQ
+| GEQ
+| EQ
+| &#8216;=&#8217;
+| DIF
+| IN
+| SUBSET
+| SUPERSET
+| UNION
+| DIFF
+| SYMDIFF
+| DOTS
+| INTERSECT
+| PP
+| builtin_num_bin_op</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_builtin_num_bin_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_builtin_num_bin_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_builtin_num_bin_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_builtin_num_bin_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>builtin_num_bin_op : &#8216;+&#8217;
+| &#8216;-&#8216;
+| &#8216;*&#8217;
+| &#8216;/&#8217;
+| DIV
+| MOD</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_builtin_num_un_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_builtin_num_un_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_builtin_num_un_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_builtin_num_un_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>builtin_num_un_op : &#8216;+&#8217;
+| &#8216;-&#8216;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_builtin_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_builtin_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_builtin_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_builtin_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>builtin_op : builtin_bin_op
+| builtin_un_op</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_builtin_un_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_builtin_un_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_builtin_un_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_builtin_un_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>builtin_un_op : NOT
+| builtin_num_un_op</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_call_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_call_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_call_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_call_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>call_expr : ident_or_quoted_op
+| ident_or_quoted_op &#8216;(&#8216; expr expr_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_case_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_case_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_case_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_case_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>case_expr           : CASE expr &#8216;{&#8216; case_expr_case case_expr_case_star &#8216;}&#8217;
+case_expr_case_star : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">&#8216;,&#8217; case_expr_case case_expr_case_star</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_case_expr_case">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_case_expr_case</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_case_expr_case"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_case_expr_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>case_expr_case : IDENT RARROW expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_comp_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_comp_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_comp_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_comp_tail" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>comp_tail <span class="classifier-delimiter">:</span> <span class="classifier">generator generator_star</span></dt>
+<dd><div class="first last line-block">
+<div class="line">generator generator_star WHERE expr</div>
+</div>
+</dd>
+<dt>generator_star <span class="classifier-delimiter">:</span> <span class="classifier">epsilon</span></dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;,&#8217; generator generator_star</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_constraint_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_constraint_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_constraint_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_constraint_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>constraint_item : CONSTRAINT expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_enum_case">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_enum_case</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_enum_case"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_enum_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>enum_case : IDENT
+| IDENT &#8216;(&#8216; ti_expr_and_id ti_expr_and_id_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_enum_cases">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_enum_cases</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_enum_cases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_enum_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>enum_cases     : &#8216;{&#8216; enum_case enum_case_star &#8216;}&#8217;
+enum_case_star : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">&#8216;,&#8217; enum_case enum_case_star</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_enum_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_enum_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_enum_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_enum_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>enum_item : ENUM IDENT annotations
+| ENUM IDENT annotations &#8216;=&#8217; enum_cases</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_enum_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_enum_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_enum_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_enum_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>enum_literal    : IDENT &#8216;(&#8216; named_expr named_expr_star &#8216;)&#8217;
+| IDENT &#8216;(&#8216; expr expr_star &#8216;)&#8217;
+| IDENT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_epsilon">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_epsilon</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_epsilon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_epsilon" title="Permalink to this definition">¶</a></dt>
+<dd><p>epsilon :</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_error">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_error</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr : expr_atom expr_binop_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr_atom">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr_atom</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr_atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr_atom : expr_atom_head expr_atom_tail annotations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr_atom_head">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr_atom_head</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr_atom_head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr_atom_head" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr_atom_head : builtin_un_op expr_atom
+| &#8216;(&#8216; expr &#8216;)&#8217;
+| ident_or_quoted_op
+| &#8216;_&#8217;
+| bool_literal
+| int_literal
+| float_literal
+| string_literal
+| set_literal
+| set_comp
+| simple_array_literal
+| simple_array_literal_2d
+| indexed_array_literal
+| simple_array_comp
+| indexed_array_comp
+| tuple_literal
+| record_literal
+| enum_literal
+| ann_literal
+| if_then_else_expr
+| case_expr
+| let_expr
+| call_expr
+| gen_call_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr_atom_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr_atom_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr_atom_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr_atom_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr_atom_tail : epsilon
+| array_access_tail expr_atom_tail
+| tuple_access_tail expr_atom_tail
+| record_access_tail expr_atom_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr_binop_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr_binop_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr_binop_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr_binop_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr_binop_tail : epsilon
+| bin_op expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_expr_star">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_expr_star</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_expr_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_expr_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>expr_star : epsilon
+| &#8216;,&#8217; expr expr_star</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_float_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_float_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_float_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_float_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>float_literal : FLOATLIT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_function_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_function_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_function_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_function_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>function_item : FUNCTION ti_expr &#8216;:&#8217; operation_item_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_gen_call_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_gen_call_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_gen_call_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_gen_call_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>gen_call_expr : ident_or_quoted_op &#8216;(&#8216; comp_tail &#8216;)&#8217; &#8216;(&#8216; expr &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_generator">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_generator</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_generator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>generator  : IDENT ident_star IN expr
+ident_star : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">&#8216;,&#8217; IDENT ident_star</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ident_or_quoted_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ident_or_quoted_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ident_or_quoted_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ident_or_quoted_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>ident_or_quoted_op : IDENT
+| QUOT builtin_op QUOT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_if_then_else_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_if_then_else_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_if_then_else_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_if_then_else_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>if_then_else_expr : IF expr THEN expr elseif_star ELSE expr ENDIF
+elseif_star       : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">ELSEIF expr THEN expr elseif_star</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_include_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_include_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_include_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_include_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>include_item : INCLUDE string_literal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_index_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_index_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_index_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_index_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>index_expr : expr &#8216;:&#8217; expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_indexed_array_comp">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_indexed_array_comp</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_indexed_array_comp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_indexed_array_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>indexed_array_comp : &#8216;[&#8216; index_expr &#8216;|&#8217; comp_tail &#8216;]&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_indexed_array_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_indexed_array_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_indexed_array_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_indexed_array_literal" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>indexed_array_literal <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;[&#8216; &#8216;]&#8217;</span></dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;[&#8216; index_expr index_expr_star &#8216;]&#8217;</div>
+</div>
+</dd>
+<dt>index_expr_star <span class="classifier-delimiter">:</span> <span class="classifier">epsilon</span></dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;,&#8217; index_expr index_expr_star</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_int_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_int_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_int_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_int_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>int_literal : INTLIT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>item : type_inst_syn_item
+| enum_item
+| include_item
+| var_decl_item
+| assign_item
+| constraint_item
+| solve_item
+| output_item
+| predicate_item
+| test_item
+| function_item
+| annotation_item</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_let_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_let_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_let_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_let_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>let_expr           : LET &#8216;{&#8216; var_decl_item var_decl_item_star &#8216;}&#8217; IN expr
+var_decl_item_star : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">&#8216;,&#8217; var_decl_item var_decl_item_star</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_model">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_model</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>model : epsilon
+| item &#8216;;&#8217; model</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_named_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_named_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_named_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_named_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>named_expr : IDENT &#8216;:&#8217; expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_named_expr_star">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_named_expr_star</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_named_expr_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_named_expr_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>named_expr_star : epsilon
+| &#8216;,&#8217; named_expr named_expr_star</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_num_bin_op">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_num_bin_op</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_num_bin_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_num_bin_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>num_bin_op : builtin_num_bin_op
+| QUOT IDENT QUOT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_num_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_num_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_num_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_num_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>num_expr : num_expr_atom num_expr_binop_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_num_expr_atom">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_num_expr_atom</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_num_expr_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_num_expr_atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>num_expr_atom : num_expr_atom_head expr_atom_tail annotations</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_num_expr_atom_head">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_num_expr_atom_head</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_num_expr_atom_head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_num_expr_atom_head" title="Permalink to this definition">¶</a></dt>
+<dd><p>num_expr_atom_head : builtin_num_un_op num_expr_atom
+| &#8216;(&#8216; num_expr &#8216;)&#8217;
+| ident_or_quoted_op
+| int_literal
+| float_literal
+| if_then_else_expr
+| case_expr
+| let_expr
+| call_expr
+| gen_call_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_num_expr_binop_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_num_expr_binop_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_num_expr_binop_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_num_expr_binop_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>num_expr_binop_tail : epsilon
+| num_bin_op num_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_op_ti_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_op_ti_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_op_ti_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_op_ti_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>op_ti_expr_tail : OP &#8216;(&#8216; ti_expr &#8216;:&#8217; &#8216;(&#8216; ti_expr ti_expr_star &#8216;)&#8217; &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_operation_item_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_operation_item_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_operation_item_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_operation_item_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>operation_item_tail : IDENT params annotations
+| IDENT params annotations &#8216;=&#8217; expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_output_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_output_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_output_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_output_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>output_item : OUTPUT expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_params">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_params</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>params : epsilon
+| &#8216;(&#8216; ti_expr_and_id ti_expr_and_id_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_predicate_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_predicate_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_predicate_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_predicate_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>predicate_item : PREDICATE operation_item_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_record_access_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_record_access_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_record_access_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_record_access_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>record_access_tail : &#8216;.&#8217; IDENT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_record_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_record_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_record_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_record_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>record_literal  : &#8216;(&#8216; named_expr named_expr_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_record_ti_exprtail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_record_ti_exprtail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_record_ti_exprtail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_record_ti_exprtail" title="Permalink to this definition">¶</a></dt>
+<dd><p>record_ti_expr_tail  : RECORD &#8216;(&#8216; ti_expr_and_id ti_expr_and_id_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_set_comp">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_set_comp</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_set_comp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_set_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>set_comp : &#8216;{&#8216; expr &#8216;|&#8217; comp_tail &#8216;}&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_set_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_set_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_set_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_set_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>set_literal : &#8216;{&#8216; expr_star &#8216;}&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_set_ti_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_set_ti_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_set_ti_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_set_ti_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>set_ti_expr_tail : SET OF ti_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_simple_array_comp">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_simple_array_comp</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_simple_array_comp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_simple_array_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>simple_array_comp : &#8216;[&#8216; expr &#8216;|&#8217; comp_tail &#8216;]&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_simple_array_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_simple_array_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_simple_array_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_simple_array_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>simple_array_literal : &#8216;[&#8216; expr_star &#8216;]&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_simple_array_literal_2d">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_simple_array_literal_2d</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_simple_array_literal_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_simple_array_literal_2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>simple_array_literal_2d : &#8216;[&#8216; &#8216;|&#8217; array_gen &#8216;|&#8217; &#8216;]&#8217;
+array_gen               : epsilon</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">expr expr_star array_2d_gen</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_solve_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_solve_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_solve_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_solve_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>solve_item : SOLVE annotations SATISFY
+| SOLVE annotations MINIMIZE expr
+| SOLVE annotations MAXIMIZE expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_string_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_string_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_string_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_string_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>string_literal : STRLIT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_test_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_test_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_test_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_test_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>test_item : TEST operation_item_tail</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ti_expr">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ti_expr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ti_expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ti_expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>ti_expr : &#8216;(&#8216; ti_expr &#8216;:&#8217; IDENT WHERE expr &#8216;)&#8217;
+| base_ti_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ti_expr_and_id">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ti_expr_and_id</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ti_expr_and_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ti_expr_and_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>ti_expr_and_id : ti_expr &#8216;:&#8217; IDENT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ti_expr_and_id_star">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ti_expr_and_id_star</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ti_expr_and_id_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ti_expr_and_id_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>ti_expr_and_id_star : epsilon
+| &#8216;,&#8217; ti_expr_and_id ti_expr_and_id_star</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ti_expr_star">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ti_expr_star</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ti_expr_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ti_expr_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>ti_expr_star : epsilon
+| &#8216;,&#8217; ti_expr ti_expr_star</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_ti_variable_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_ti_variable_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_ti_variable_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_ti_variable_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>ti_variable_expr_tail : IDENT
+| ANY IDENT</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_tuple_access_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_tuple_access_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_tuple_access_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_tuple_access_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple_access_tail : &#8216;.&#8217; int_literal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_tuple_literal">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_tuple_literal</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_tuple_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_tuple_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple_literal : &#8216;(&#8216; expr expr_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_tuple_ti_expr_tail">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_tuple_ti_expr_tail</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_tuple_ti_expr_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_tuple_ti_expr_tail" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple_ti_expr_tail : TUPLE &#8216;(&#8216; ti_expr ti_expr_star &#8216;)&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_type_inst_syn_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_type_inst_syn_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_type_inst_syn_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_type_inst_syn_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>type_inst_syn_item : TYPE IDENT annotations &#8216;=&#8217; ti_expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_var_decl_item">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_var_decl_item</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_var_decl_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_var_decl_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>var_decl_item : ti_expr_and_id annotations
+| ti_expr_and_id annotations &#8216;=&#8217; expr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mzparse.p_var_par">
+<tt class="descclassname">mzparse.</tt><tt class="descname">p_var_par</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="_modules/mzparse.html#p_var_par"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mzparse.p_var_par" title="Permalink to this definition">¶</a></dt>
+<dd><p>var_par : epsilon
+| PAR
+| VAR</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-parsetab">
+<span id="parsetab-module"></span><h2>parsetab module<a class="headerlink" href="#module-parsetab" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-semantic">
+<span id="semantic-module"></span><h2>semantic module<a class="headerlink" href="#module-semantic" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="semantic.best_sim">
+<tt class="descclassname">semantic.</tt><tt class="descname">best_sim</tt><big>(</big><em>element</em>, <em>corpus</em><big>)</big><a class="reference internal" href="_modules/semantic.html#best_sim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#semantic.best_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best similarity match given an element and a word corpus.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="semantic.generate">
+<tt class="descclassname">semantic.</tt><tt class="descname">generate</tt><big>(</big><em>corpus</em>, <em>joint_wordset</em>, <em>fdist</em><big>)</big><a class="reference internal" href="_modules/semantic.html#generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#semantic.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the semantic vector given a corpus, the joint wordset and the
+the word distribution statistics &#8216;fdist&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="semantic.sem_similarity">
+<tt class="descclassname">semantic.</tt><tt class="descname">sem_similarity</tt><big>(</big><em>vector1</em>, <em>vector2</em><big>)</big><a class="reference internal" href="_modules/semantic.html#sem_similarity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#semantic.sem_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the semantic similarity between two semantic vectors.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-settings">
+<span id="settings-module"></span><h2>settings module<a class="headerlink" href="#module-settings" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-word">
+<span id="word-module"></span><h2>word module<a class="headerlink" href="#module-word" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="word.Word">
+<em class="property">class </em><tt class="descclassname">word.</tt><tt class="descname">Word</tt><big>(</big><em>word</em>, <em>part</em><big>)</big><a class="reference internal" href="_modules/word.html#Word"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#word.Word" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="word.Word.information">
+<tt class="descname">information</tt><big>(</big><em>fdist</em><big>)</big><a class="reference internal" href="_modules/word.html#Word.information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#word.Word.information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Information for this word given a probability
+distribution (FreqDist)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="word.Word.similarity">
+<tt class="descname">similarity</tt><big>(</big><em>other</em><big>)</big><a class="reference internal" href="_modules/word.html#Word.similarity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#word.Word.similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Wu &amp; Palmer Similarity between two words.
+Return 0 if words&#8217; parts are not equals</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-wordorder">
+<span id="wordorder-module"></span><h2>wordorder module<a class="headerlink" href="#module-wordorder" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="wordorder.count_words">
+<tt class="descclassname">wordorder.</tt><tt class="descname">count_words</tt><big>(</big><em>corpus</em><big>)</big><a class="reference internal" href="_modules/wordorder.html#count_words"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wordorder.count_words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wordorder.create_jointset">
+<tt class="descclassname">wordorder.</tt><tt class="descname">create_jointset</tt><big>(</big><em>corpus_a</em>, <em>corpus_b</em><big>)</big><a class="reference internal" href="_modules/wordorder.html#create_jointset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wordorder.create_jointset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the Joint Word Set given two corpus (texts)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wordorder.create_ordervec">
+<tt class="descclassname">wordorder.</tt><tt class="descname">create_ordervec</tt><big>(</big><em>corpus</em>, <em>joint_word_set</em><big>)</big><a class="reference internal" href="_modules/wordorder.html#create_ordervec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wordorder.create_ordervec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a corpus (text) and a joint word set it creates a WOV</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wordorder.order_similarity">
+<tt class="descclassname">wordorder.</tt><tt class="descname">order_similarity</tt><big>(</big><em>order_vector_1</em>, <em>order_vector_2</em><big>)</big><a class="reference internal" href="_modules/wordorder.html#order_similarity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wordorder.order_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Word Order Similarity between two order vectors</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">dmmg package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-clustering">clustering module</a></li>
+<li><a class="reference internal" href="#module-distances">distances module</a></li>
+<li><a class="reference internal" href="#module-dmmgclient">dmmgclient module</a></li>
+<li><a class="reference internal" href="#module-dmmgmain">dmmgmain module</a></li>
+<li><a class="reference internal" href="#module-dmmgserver">dmmgserver module</a></li>
+<li><a class="reference internal" href="#module-mzlex">mzlex module</a></li>
+<li><a class="reference internal" href="#module-mzparse">mzparse module</a></li>
+<li><a class="reference internal" href="#module-parsetab">parsetab module</a></li>
+<li><a class="reference internal" href="#module-semantic">semantic module</a></li>
+<li><a class="reference internal" href="#module-settings">settings module</a></li>
+<li><a class="reference internal" href="#module-word">word module</a></li>
+<li><a class="reference internal" href="#module-wordorder">wordorder module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/dmmg.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">DMMG 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Luca Da Rin Fioretto &lt;lucadrf@nmsu.edu&gt;, Federico Campeotto &lt;campe8@nmsu.edu&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

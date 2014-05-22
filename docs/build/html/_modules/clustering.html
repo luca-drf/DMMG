@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>clustering &mdash; DMMG 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="DMMG 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for clustering</h1><div class="highlight"><pre>
+<span class="c"># import sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">argmin</span>
+<span class="kn">from</span> <span class="nn">distances</span> <span class="kn">import</span> <span class="n">edit_dist</span>
+<span class="kn">import</span> <span class="nn">settings</span>
+
+
+<div class="viewcode-block" id="InstructionsIndex"><a class="viewcode-back" href="../dmmg.html#clustering.InstructionsIndex">[docs]</a><span class="k">class</span> <span class="nc">InstructionsIndex</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;annotation&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;array&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;assert&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;bool&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;constraint&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;enum&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;float&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;function&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;int&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;list&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;minimize&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;maximize&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;predicate&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;set&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;string&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;tuple&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s">&#39;var&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+
+</div>
+<div class="viewcode-block" id="FileIndexer"><a class="viewcode-back" href="../dmmg.html#clustering.FileIndexer">[docs]</a><span class="k">class</span> <span class="nc">FileIndexer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">InstructionsIndex</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__filterlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__readfile</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__readfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;(.*?)(%)&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">__filterlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">r&#39;;&#39;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39; +&#39;</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s">r&#39;\w+&#39;</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">word</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span> <span class="o">+</span> <span class="s">&#39;;&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+</div>
+<div class="viewcode-block" id="initialize_clusters"><a class="viewcode-back" href="../dmmg.html#clustering.initialize_clusters">[docs]</a><span class="k">def</span> <span class="nf">initialize_clusters</span><span class="p">(</span><span class="n">file_dicts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fill a feature list (InstructionsIndex) set with all the instructions</span>
+<span class="sd">    passed as file_dicts. Remove a feature if it is not present in all files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">feature_list</span> <span class="o">=</span> <span class="n">InstructionsIndex</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">fd</span> <span class="ow">in</span> <span class="n">file_dicts</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">fd</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="p">[]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">feature_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+    <span class="k">for</span> <span class="n">fd</span> <span class="ow">in</span> <span class="n">file_dicts</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">:</span>
+            <span class="n">feature_list</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">fd</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">key</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">feature_list</span>
+
+</div>
+<div class="viewcode-block" id="update_clustroid"><a class="viewcode-back" href="../dmmg.html#clustering.update_clustroid">[docs]</a><span class="k">def</span> <span class="nf">update_clustroid</span><span class="p">(</span><span class="n">cluster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update the clustroid in a cluster using the minimum sum of squares&quot;&quot;&quot;</span>
+    <span class="n">sum_of_squares</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="p">)):</span>
+        <span class="n">summ</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="p">)):</span>
+            <span class="n">summ</span> <span class="o">+=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">edit_dist</span><span class="p">(</span><span class="n">cluster</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cluster</span><span class="p">[</span><span class="n">j</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">sum_of_squares</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">summ</span><span class="p">)</span>
+    <span class="n">c_id</span> <span class="o">=</span> <span class="n">argmin</span><span class="p">(</span><span class="n">sum_of_squares</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cluster</span><span class="p">[</span><span class="n">c_id</span><span class="p">])</span>
+    <span class="k">del</span> <span class="n">cluster</span><span class="p">[</span><span class="n">c_id</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="set_clustroid_mate"><a class="viewcode-back" href="../dmmg.html#clustering.set_clustroid_mate">[docs]</a><span class="k">def</span> <span class="nf">set_clustroid_mate</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;For each cluster, set the [-2] element as the closest to the clustroid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">min_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">listoclusters</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">edit_dist</span><span class="p">(</span><span class="n">cluster</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cluster</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">min_dist</span> <span class="o">&gt;</span> <span class="n">dist</span><span class="p">:</span>
+                <span class="n">min_dist</span> <span class="o">=</span> <span class="n">dist</span>
+                <span class="n">mate_idx</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">cluster</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">cluster</span><span class="p">[</span><span class="n">mate_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster</span><span class="p">[</span><span class="n">mate_idx</span><span class="p">],</span> <span class="n">cluster</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="clusterize"><a class="viewcode-back" href="../dmmg.html#clustering.clusterize">[docs]</a><span class="k">def</span> <span class="nf">clusterize</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create clusters starting from a list of lists of single elements&quot;&quot;&quot;</span>
+    <span class="n">cluster_size</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">cluster_size</span> <span class="o">&lt;</span> <span class="n">settings</span><span class="o">.</span><span class="n">CLUSTER_MAX_SIZE</span><span class="p">:</span>
+        <span class="n">min_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">)):</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="n">edit_dist</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">listoclusters</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">min_dist</span><span class="p">:</span>
+                    <span class="n">min_dist</span> <span class="o">=</span> <span class="n">dist</span>
+                    <span class="n">to_merge</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">listoclusters</span><span class="p">[</span><span class="n">to_merge</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">[</span><span class="n">to_merge</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">update_clustroid</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">[</span><span class="n">to_merge</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">cluster_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">listoclusters</span><span class="p">)</span>
+
+    <span class="n">set_clustroid_mate</span><span class="p">(</span><span class="n">listoclusters</span><span class="p">)</span>
+
+<span class="c"># if __name__ == &#39;__main__&#39;:</span>
+<span class="c">#     files = sys.argv[1], sys.argv[2], sys.argv[3]</span>
+
+<span class="c">#     file_dicts = []</span>
+<span class="c">#     for f in files:</span>
+<span class="c">#         file_dicts.append(FileIndexer(f))</span>
+
+<span class="c">#     # for d in file_dicts:</span>
+<span class="c">#     #     for word in d.index:</span>
+<span class="c">#     #         print &#39;%s (%d):\n%s\n&#39; % (word,</span>
+<span class="c">#     #                                   len(d.index[word]),</span>
+<span class="c">#     #                                   d.index[word])</span>
+
+
+<span class="c">#     # Prepare the initial set of clusters</span>
+<span class="c">#     clusters = initialize_clusters(file_dicts)</span>
+<span class="c">#     for keyword in clusters:</span>
+<span class="c">#         clusterize(clusters[keyword])</span>
+
+<span class="c">#     for word in clusters:</span>
+<span class="c">#         print &#39;%s (%d):\n%s\n&#39; % (word,</span>
+<span class="c">#                                   len(clusters[word]),</span>
+<span class="c">#                                   clusters[word])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">DMMG 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Luca Da Rin Fioretto &lt;lucadrf@nmsu.edu&gt;, Federico Campeotto &lt;campe8@nmsu.edu&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

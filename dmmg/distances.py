@@ -2,14 +2,16 @@ import numpy as np
 
 
 def edit_dist(s1, s2):
-    """Return the edit distance"""
+    """Return the edit distance (insertions and deletions only) between two
+    sequences s1 and s2."""
     m = len(s1)
     n = len(s2)
     return m + n - 2 * lcs_len(s1, s2, m, n)
 
 
 def lcs_len(X, Y, m, n):
-    """Return the lenght of the longest common subsequence"""
+    """Return the lenght of the longest common subsequence between two
+    sequences X and Y, where m and n are respectively |X| and |Y|."""
     if m < n:
         m, n = n, m
         X, Y = Y, X
@@ -31,7 +33,10 @@ def lcs_len(X, Y, m, n):
 
 
 def lcs(X, Y, m, n):
-    """Return the matrix of the longest common subsequence"""
+    """Return the matrix (as a numpy 2D array) of the longest common
+    subsequence between two sequences X and Y, where m and n are respectively
+    |X| and |Y|."""
+
     # C = [[0 for j in xrange(n + 1)] for i in xrange(m + 1)]
     C = np.zeros((m + 1, n + 1), dtype=np.int)
     for i in xrange(1, m + 1):
@@ -44,7 +49,10 @@ def lcs(X, Y, m, n):
 
 
 def lcs_print(X, Y, i, j, allign=True):
-    """Print the lcs highlighting the allignment"""
+    """Print the longest common subsequence between two sequences X and Y,
+    where m and n are respectively |X| and |Y|. If allign is set to True
+    (default) the print function will print also the gaps as '~'.
+    Example: 'abaco' and 'abbacchio' will generate 'a~ba~c~~o'."""
     C = lcs(X, Y, i, j)
     lcs_str = ''
     while True:
@@ -63,7 +71,12 @@ def lcs_print(X, Y, i, j, allign=True):
                 lcs_str = '~' + lcs_str
 
 
-def lcs_tree_vector(X, Y, i, j):
+def lcs_vector(X, Y, i, j):
+    """Return a list of pairs, each pair contains the starting element and the
+    length for each continuos subsequence found.
+    Example: 'abbaino' and 'abbacchio' will generate the allignment
+    'abba~~~i~o', lcs_vector will return [['o', 1], ['i', 1], ['a', 4]]
+    """
     C = lcs(X, Y, i, j)
     lcs_vector = []
     sequence = False

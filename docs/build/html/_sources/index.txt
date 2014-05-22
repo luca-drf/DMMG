@@ -1,5 +1,10 @@
-Declarative Mathematical Model Generator (DMMG)
-===============================================
+.. DMMG documentation master file, created by
+   sphinx-quickstart on Wed May 21 18:54:26 2014.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to DMMG's documentation!
+================================
 DMMG project's goal is to provide a system to automatically generate
 mathematical models based on Natural Language Descriptions (NLD).
 
@@ -25,7 +30,19 @@ Contributors
 ------------
 Luca Da Rin Fioretto, Federico Campeotto
 
-.. How to install
-.. ==============
 
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 

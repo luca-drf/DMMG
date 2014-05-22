@@ -3,7 +3,7 @@ import ply.yacc as yacc
 # Get the token map from the lexer.  This is required.
 from mzlex import tokens
 
-from distances import lcs_tree_vector, lcs_print
+from distances import lcs_vector, lcs_print
 
 
 class Node:
@@ -1406,14 +1406,16 @@ def p_error(p):
 # #     print result
 
 def compute_snippet_elements(s1, s2):
+    """Returns the snippets generated from 's1' and 's2'.
+    """
     snippet_elems = []
     parser = yacc.yacc()
     root1 = parser.parse(s1)
     root2 = parser.parse(s2)
     tree_vector1 = root1.create_tree_vector()
     tree_vector2 = root2.create_tree_vector()
-    lcs_vector = lcs_tree_vector(tree_vector1, tree_vector2,
+    lcs_tree_vector = lcs_vector(tree_vector1, tree_vector2,
                                  len(tree_vector1), len(tree_vector2))
-    for n in reversed(lcs_vector):
+    for n in reversed(lcs_tree_vector):
         snippet_elems.append(n[0].dump_subtree_terminals(n[1])[0])
     return snippet_elems

@@ -2,6 +2,8 @@ from numpy import dot, linalg
 
 
 def best_sim(element, corpus):
+    """Return the best similarity match given an element and a word corpus.
+    """
     best_sim = 0
     best_word = ''
     for word in corpus:
@@ -13,6 +15,9 @@ def best_sim(element, corpus):
 
 
 def generate(corpus, joint_wordset, fdist):
+    """Return the semantic vector given a corpus, the joint wordset and the
+    the word distribution statistics 'fdist'.
+    """
     vector = [0] * len(joint_wordset)
     for i, element in enumerate(joint_wordset):
         if element in corpus:
@@ -27,5 +32,7 @@ def generate(corpus, joint_wordset, fdist):
 
 
 def sem_similarity(vector1, vector2):
+    """Return the semantic similarity between two semantic vectors.
+    """
     return (dot(vector1, vector2) /
             (linalg.norm(vector1) * linalg.norm(vector2)))
